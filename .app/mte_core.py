@@ -25,7 +25,7 @@ import mte_config as mte_config
 class Core:
   def __init__(self):
     # Internal data storage
-    self.data = {
+    self.storage = {
       # Application details
       'name': '[MTE] Maintenance Task Execution',
       'tagline': 'Centralized management of maintenance tasks.',
@@ -34,12 +34,12 @@ class Core:
       'author': 'Arne Coomans',
       # Runtime details
       'start_time': time.time(),
-      'base_dir': os.path.split(os.path.dirname(os.path.abspath(__file__)))[0],
-      'default_configuration': 'config/maintenance.conf',
+      'base_dir': os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + '/',
+      'default_configuration': 'config/maintenance.yml',
     }
     # Actual processing
     #   Load configuration file
-    self.config = mte_config.Config(self)
+    self.config = mte_config.Config(self, self.storage['default_configuration'])
     #   Parse command line arguments
     self.arguments = self.get_parsed_arguments()
     
@@ -49,13 +49,13 @@ class Core:
   def __str__(self):
     return self.get_description()
   def get_version(self):
-    return self.data['version']
+    return self.storage['version']
   def get_description(self):
-    return self.data['name'] + " v" + self.get_version() + ". "
+    return self.storage['name'] + " v" + self.get_version() + ". "
   def get_tagline(self):
-    return self.data['tagline']
+    return self.storage['tagline']
   def calculate_script_duration(self):
-    return time.time() - self.data['start_time']
+    return time.time() - self.storage['start_time']
   def get_script_duration(self):
     # Uses the start time defined in core.__init__ and current time to calculate running time.
     # Rounds output to 4 digits behind comma.
@@ -67,7 +67,7 @@ class Core:
   def get_parsed_arguments(self):
     # Set welcome text when displaying help text
     parser = argparse.ArgumentParser(description=self.get_description() + self.get_tagline(), 
-                                     epilog="By " + self.data['author'] + ". Have an issue or request? Use " + self.data['help_url'])
+                                     epilog="By " + self.storage['author'] + ". Have an issue or request? Use " + self.storage['help_url'])
     # List Arguments
     #   Task Selection
     parser.add_argument("-t", "--task",
