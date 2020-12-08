@@ -20,6 +20,7 @@ import argparse
 # Add local shared script directory to import path
 #  Local function library
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+import mte_logging as mte_logging
 import mte_config as mte_config
 
 class Core:
@@ -38,8 +39,10 @@ class Core:
       'default_configuration': 'config/maintenance.yml',
     }
     # Actual processing
+    #   Prepare logging
+    self.log = mte_logging.Logger(self)
     #   Load configuration file
-    self.config = mte_config.Config(self, self.storage['default_configuration'])
+    self.config = mte_config.Config(self.storage['default_configuration'])
     #   Parse command line arguments
     self.arguments = self.get_parsed_arguments()
     
