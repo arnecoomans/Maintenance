@@ -42,9 +42,9 @@ class Core:
     #   Prepare logging
     self.log = mte_logging.Logger(self)
     #   Load configuration file
-    self.config = mte_config.Config(self.storage['default_configuration'])
+    self.config = mte_config.Config(self, self.storage['default_configuration'])
     #   Parse command line arguments
-    self.arguments = self.get_parsed_arguments()
+    self.process_parsed_arguments( self.get_parsed_arguments() )
     
   #
   #
@@ -98,6 +98,23 @@ class Core:
                         choices=[0,1,2,3,4,5])
     # Parse arguments
     arguments = parser.parse_args()
-    # Process parsed arguments
     # Return parsed arguments
+    return arguments
+  def process_parsed_arguments(self, arguments):
+    # Task selection
+    #   Task arguments
+    # Target selection
+    if arguments.target is not None:
+      self.log.add("Command line arguments changed backup target from " + self.config.get_value('backup_target') + " to " + arguments.target + ".", 4)
+      self.config.set_value('backup_target', arguments.target)
+    # Configuration File selection
+    if arguments.config is not None:
+      for file in arguments.config:
+        self.log.add("Command line arguments added " + file + " to configuration processer.", 4)
+        self.config.get_contents_of_configuration_file(file)
+    # Logging
+    if arguments.logging is not None:
+      self.log.add('Command line arguments changed log display level from ' + str(self.log.display_level) + " to " + str(arguments.logging) + ".", 4)
+      self.config.set_value('logging', arguments.logging)
+      self.log.set_display_level(arguments.logging)
     return arguments
