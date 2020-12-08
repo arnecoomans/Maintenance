@@ -1,0 +1,12 @@
+maintenance:
+  logging: 5
+  backup_target: "/backup/"
+  gzip_target: True
+  date_format_filename: "yyyymmdd"
+  tasks:
+    backup_mysql:
+      target_subdirectory: "mysql/"
+      ignored_databases: "information_schema, mysql, performance_schema, sys"
+    backup_config:
+      target_subdirectory: "config/"
+      keep_incremental: True
