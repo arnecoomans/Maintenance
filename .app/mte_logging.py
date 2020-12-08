@@ -16,20 +16,20 @@ import sys
 import datetime
 
 class Logger:
-  def __init__(self, core, display_level=5):
+  def __init__(self, core, display_level=4):
+    self.core = core
     self.storage = []
     self.display_level = display_level
     self.set_display_level(display_level)
+    self.add_welcome()
   
   def __del__(self):
-    # @todo move this to a function
-    for row in self.storage:
-      if row['importance'] <= self.display_level:
-        print(str(row['time']) + " [" + self.get_severity(row['importance']) + "] " + row['data'])
+    self.display_log()
   # Setting display level
   # Display level can be set in a range between 0 and 5. 
   # Allow display level to be set during processing. 
   # Allow display level to be set without errors
+
   def set_display_level(self, display_level):
     # Display level should be integer. If not:
     if type(display_level) is not int:
@@ -55,7 +55,37 @@ class Logger:
                           'time': datetime.datetime.now()
                          } )
 
+
+  def add_welcome(self):
+    self.add('User ' + self.core.storage['runtime_user'] + ' is starting ' + __file__ + '.', 5)
+    self.add('Arguments: ' + " ".join(sys.argv), 5)
+
   # Log displaying
+  def get_usable_loglines(self):
+    usable_log = []
+    for row in self.storage:
+      if row['importance'] <= self.display_level:
+        usable_log.append(str(row['time']) + " [" + self.get_severity(row['importance']) + "] " + row['data'])
+    return usable_log
+  def get_header(self):
+    if self.display_level == 5:
+      return "[  DATE  ] [     TIME    ] [  TYPE  ] [MESSAGE]"
+
+
+  def display_log(self):
+    print(self.get_header())
+    # cap row length at set value. Indent to match date and message type
+    max_length = 128
+    for row in self.get_usable_loglines():
+      while len(row) > max_length:
+        print(row[0:max_length])
+        row = " "*38 + row[max_length:]
+      print(row)
+  def write_log_to_file(self):
+    pass
+    # @todo check if file is configured
+    # @todo append to file
+
   def get_severity(self, display_level):
     if display_level == 0:
       severity = 'fatal'
@@ -68,7 +98,7 @@ class Logger:
     elif display_level == 4:
       severity = 'notice'
     elif display_level == 5:
-      severity = 'remark'
+      severity = ''
     # Ensure displayed severity is exactly 8 characters long
     severity = severity[0:8]
     while len(severity) < 8:

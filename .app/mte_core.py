@@ -15,6 +15,7 @@ import os
 import sys
 import time
 import argparse
+import getpass
 
 
 # Add local shared script directory to import path
@@ -22,6 +23,7 @@ import argparse
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import mte_logging as mte_logging
 import mte_config as mte_config
+
 
 class Core:
   def __init__(self):
@@ -37,12 +39,14 @@ class Core:
       'start_time': time.time(),
       'base_dir': os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + '/',
       'default_configuration': 'config/maintenance.yml',
+      'runtime_user': getpass.getuser(),
     }
     # Actual processing
     #   Prepare logging
     self.log = mte_logging.Logger(self)
     #   Load configuration file
     self.config = mte_config.Config(self, self.storage['default_configuration'])
+    self.log.set_display_level(self.config.get_value('logging'))
     #   Parse command line arguments
     self.process_parsed_arguments( self.get_parsed_arguments() )
     
