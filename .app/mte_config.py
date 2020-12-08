@@ -66,3 +66,14 @@ class Config:
         for key, value in document.items():
           self.set_value(key, value)
     # Done
+
+  # Check if configuration files have been processed. 
+  #   Because not processing a configuration file is not fatal, because 
+  #   multiple configuration files can be processed, we need to verify that a
+  #   configuration file has been processed. The processed configuration files
+  #   are accounted for in the self.configuration_files list.
+  def has_processed_configuration_files(self):
+    if len(self.configuration_files) > 0:
+      return True
+    else:
+      return False
