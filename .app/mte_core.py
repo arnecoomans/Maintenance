@@ -28,6 +28,7 @@ import mte_config as mte_config
 class Core:
   def __init__(self):
     # Internal data storage
+    self.storage = {}
     self.storage = {
       # Application details
       'name': '[MTE] Maintenance Task Execution',
@@ -40,6 +41,8 @@ class Core:
       'base_dir': os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + '/',
       'default_configuration': 'config/maintenance.yml',
       'runtime_user': getpass.getuser(),
+      'has_root_privilage': self.has_root_privilage(),
+      'can_sudo': self.can_sudo(),
     }
     # Actual processing
     #   Prepare logging
@@ -68,6 +71,15 @@ class Core:
     # Rounds output to 4 digits behind comma.
     return str(round(self.calculate_script_duration(), 4)) + " seconds"
   
+  def has_root_privilage(self):
+    if os.getuid() == 0:
+      return True
+    else:
+      return False
+
+  def can_sudo(self):
+    pass
+    # @todo
   #
   #
   # Parse Command Line Arguments

@@ -14,7 +14,6 @@
 import os
 import sys
 import yaml
-import pprint #@todo remove debugging feature 
 
 class Config:
   def __init__(self, core, configuration_file):
@@ -22,9 +21,6 @@ class Config:
     self.configuration_files = []
     self.storage = {}
     self.get_contents_of_configuration_file(configuration_file)
-    # @todo remove following debugging lines
-    #print()
-    #pprint.pprint(self.storage)
 
   # Storage access functions
   def set_value(self, key, value, prefix=[]):

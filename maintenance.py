@@ -18,13 +18,16 @@ import sys
 # Add local shared script directory to import path
 #   Local function library
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/.app/")
+import mte_core as mte_core
+
 #   Tasks storage library
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/tasks/")
-import mte_core as mte_core
+import show_applied_config
 
 # Load Core
 #   Core handles basic functionality such as runtime argument processing.
 #   Core loads Logging and Configuration classes
 core = mte_core.Core()
-
-print ("ran " + str(core) + "without an issue in " + core.get_script_duration() + " :-)")
+# @todo Dispatch task
+task = show_applied_config.Task(core)
+task.execute()

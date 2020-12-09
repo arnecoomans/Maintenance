@@ -54,26 +54,35 @@ class Logger:
                           'importance': importance, 
                           'time': datetime.datetime.now()
                          } )
-
+  def content(self, data='', importance=-1):
+    self.storage.append( {'data': data, 
+                          'importance': importance, 
+                          'time': datetime.datetime.now()
+                         } )
 
   def add_welcome(self):
-    self.add('User ' + self.core.storage['runtime_user'] + ' is starting ' + __file__ + '.', 5)
+    self.add('User ' + self.core.storage['runtime_user'] + ' is starting ' + self.core.storage['base_dir'] + sys.argv[0] + '.', 5)
     self.add('Arguments: ' + " ".join(sys.argv), 5)
+    self.add(str(self.core), 5)
+    self.add('',5)
+
 
   # Log displaying
   def get_usable_loglines(self):
     usable_log = []
     for row in self.storage:
-      if row['importance'] <= self.display_level:
+      if row['importance'] < 0:
+        usable_log.append(row['data'])
+      elif row['importance'] <= self.display_level:
         usable_log.append(str(row['time']) + " [" + self.get_severity(row['importance']) + "] " + row['data'])
     return usable_log
   def get_header(self):
-    if self.display_level == 5:
-      return "[  DATE  ] [     TIME    ] [  TYPE  ] [MESSAGE]"
+    return "[  DATE  ] [     TIME    ] [  TYPE  ] [     MESSAGE"
 
 
   def display_log(self):
-    print(self.get_header())
+    if self.display_level == 5:
+      print(self.get_header())
     # cap row length at set value. Indent to match date and message type
     max_length = 128
     for row in self.get_usable_loglines():
@@ -88,16 +97,16 @@ class Logger:
 
   def get_severity(self, display_level):
     if display_level == 0:
-      severity = 'fatal'
-    elif display_level == 1:
       severity = 'critical'
-    elif display_level == 2:
+    elif display_level == 1:
       severity = 'error'
-    elif display_level == 3:
+    elif display_level == 2:
       severity = 'warning'
-    elif display_level == 4:
+    elif display_level == 3:
       severity = 'notice'
-    elif display_level == 5:
+    elif display_level == 4:
+      severity = ''
+    else:
       severity = ''
     # Ensure displayed severity is exactly 8 characters long
     severity = severity[0:8]
