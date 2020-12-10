@@ -23,11 +23,13 @@ import getpass
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import mte_logging as mte_logging
 import mte_config as mte_config
+import mte_task_dispatcher as mte_task_dispatcher
 
 
 class Core:
   def __init__(self):
     # Internal data storage
+    self.tasks = []
     self.storage = {}
     self.storage = {
       # Application details
@@ -52,6 +54,8 @@ class Core:
     self.log.set_display_level(self.config.get_value('logging'))
     #   Parse command line arguments
     self.process_parsed_arguments( self.get_parsed_arguments() )
+    # Prepare Task Dispatcher
+    self.dispatcher = mte_task_dispatcher.TaskDispatcher(self)
     
   #
   #
@@ -71,6 +75,11 @@ class Core:
     # Rounds output to 4 digits behind comma.
     return str(round(self.calculate_script_duration(), 4)) + " seconds"
   
+  def get(self, key):
+    if key in self.storage:
+      return self.storage[key]
+    else:
+      return False
   def has_root_privilage(self):
     if os.getuid() == 0:
       return True
@@ -91,10 +100,12 @@ class Core:
     #   Task Selection
     parser.add_argument("-t", "--task",
                         help="* Select task to be executed.",
+                        action="append",
                         required=True)
     #   Task Arguments
     parser.add_argument("-arg", "--argument",
-                        help="Arguments passed to task")
+                        help="Arguments passed to task",
+                        action="append")
     #   Target Selection
     #   Overrides target defined by configuration module.
     parser.add_argument("--target", 
@@ -119,6 +130,8 @@ class Core:
   def process_parsed_arguments(self, arguments):
     # Task selection
     #   Task arguments
+    if arguments.task is not None:
+      self.tasks = arguments.task
     # Target selection
     if arguments.target is not None:
       self.log.add("Command line arguments changed backup target from " + self.config.get_value('backup_target') + " to " + arguments.target + ".", 4)
@@ -130,7 +143,8 @@ class Core:
         self.config.get_contents_of_configuration_file(file)
     # Logging
     if arguments.logging is not None:
-      self.log.add('Command line arguments changed log display level from ' + str(self.log.display_level) + " to " + str(arguments.logging) + ".", 4)
-      self.config.set_value('logging', arguments.logging)
-      self.log.set_display_level(arguments.logging)
+      if arguments.logging is not self.log.display_level:
+        self.log.add('Command line arguments changed log display level from ' + str(self.log.display_level) + " to " + str(arguments.logging) + ".", 4)
+        self.config.set_value('logging', arguments.logging)
+        self.log.set_display_level(arguments.logging)
     return arguments

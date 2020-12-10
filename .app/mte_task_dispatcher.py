@@ -13,20 +13,62 @@
 # Import system modules
 import os
 import sys
+import importlib
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__) + "../tasks/"))
 
 class TaskDispatcher:
   def __init__(self, core):
     self.core = core
     self.storage = {}
+    self.available_tasks = []
+    self.inventorize_tasks()
+    
+
+  def inventorize_tasks(self):
+    # Check for installed tasks on filesystem
+    for filename in os.listdir(self.core.get('base_dir') + 'tasks/'):
+      if os.path.splitext(filename)[1] == ".py":
+        if self.is_marked_as_task(filename):
+          self.available_tasks.append(os.path.splitext(filename)[0])
+    self.core.log.add("Found available tasks: [" + ", ".join(self.available_tasks) + "].", 5)
+  
+  def is_marked_as_task(self, filename):
+    f=open(self.core.get('base_dir') + 'tasks/' + filename)
+    lines=f.readlines()
+    if len(lines) > 2:
+      if lines[1].strip() == "# [MTETASK]":
+        return True
+    else:
+      return False
+
+  def is_task(self, task):
+    if task in self.available_tasks:
+      return True
+    return False
+  
+  def get_current_task(self):
+    pass
+  
+  def dispatch(self, task):
+    self.core.log.add("Dispatched task: [" + task + "].", 4)
+    if self.is_task(task):
+      module_task = importlib.import_module(task, package=None)
+      task = module_task.Task(self.core, task)
+      return True
+    else:
+      self.core.log.add("Task [" + task + "] not found. Skipping this task.", 1)
+      return False
 
 class Task:
-  def __init__(self, core):
+  def __init__(self, core, task_name):
     self.core = core
+    self.task_name = task_name
     self.storage = {}
     self.queue = []
-    self.core.log.add("Dispatched task " + self.get_task_name(), 4)
-    
+    self.core.log.add("Loaded task: [" + self.get_task_name() + "].", 5)
+    self.execute()
+
   def get_task_name(self):
-    return "test"
-    # @todo
-    #return self.core.dispatcher.get_task()
+    return self.task_name
+    

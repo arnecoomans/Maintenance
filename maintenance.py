@@ -28,6 +28,5 @@ import show_applied_config
 #   Core handles basic functionality such as runtime argument processing.
 #   Core loads Logging and Configuration classes
 core = mte_core.Core()
-# @todo Dispatch task
-task = show_applied_config.Task(core)
-task.execute()
+for task in core.tasks:
+  core.dispatcher.dispatch(task)

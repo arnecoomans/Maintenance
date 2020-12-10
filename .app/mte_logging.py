@@ -62,7 +62,7 @@ class Logger:
 
   def add_welcome(self):
     self.add('User ' + self.core.storage['runtime_user'] + ' is starting ' + self.core.storage['base_dir'] + sys.argv[0] + '.', 5)
-    self.add('Arguments: ' + " ".join(sys.argv), 5)
+    self.add('Runtime arguments supplied: ' + " ".join(sys.argv[1:]), 5)
     self.add(str(self.core), 5)
     self.add('',5)
 
@@ -105,7 +105,7 @@ class Logger:
     elif display_level == 3:
       severity = 'notice'
     elif display_level == 4:
-      severity = ''
+      severity = 'message'
     else:
       severity = ''
     # Ensure displayed severity is exactly 8 characters long
