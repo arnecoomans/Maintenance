@@ -44,7 +44,6 @@ class Core:
       'default_configuration': 'config/maintenance.yml',
       'runtime_user': getpass.getuser(),
       'has_root_privilage': self.has_root_privilage(),
-      'can_sudo': self.can_sudo(),
     }
     # Actual processing
     #   Prepare logging
@@ -56,6 +55,8 @@ class Core:
     self.process_parsed_arguments( self.get_parsed_arguments() )
     # Prepare Task Dispatcher
     self.dispatcher = mte_task_dispatcher.TaskDispatcher(self)
+    # DEV
+    self.get_sudo('test_sudo')
     
   #
   #
@@ -75,20 +76,31 @@ class Core:
     # Rounds output to 4 digits behind comma.
     return str(round(self.calculate_script_duration(), 4)) + " seconds"
   
+
   def get(self, key):
     if key in self.storage:
       return self.storage[key]
     else:
       return False
+  
+  # SUDO AND ROOT
   def has_root_privilage(self):
     if os.getuid() == 0:
       return True
     else:
       return False
 
-  def can_sudo(self):
-    pass
-    # @todo
+  def get_sudo(self, task=''):
+    #self.config.get_value('run_as_root', ['task', 'test_sudo'])
+    if self.config.get_value('run_as_root') or self.config.get_value('run_as_root', ['task', task]) and not self.has_root_privilage():
+      return "sudo "
+    return ""
+  
+  # System command execution
+  def run_command(self, command, task):
+    self.log.add('Executing os-level command: [' + self.get_sudo(task) + command + "].")
+    command = os.popen(command)
+    return command.read().strip().split("\n")
   #
   #
   # Parse Command Line Arguments

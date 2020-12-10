@@ -36,9 +36,9 @@ class Config:
       self.storage[".".join(prefix + [key])] = value
     # Done
 
-  def get_value(self, key):
-    if key in self.storage:
-      return self.storage[key]
+  def get_value(self, key, prefix=[]):
+    if ".".join(prefix + [key]) in self.storage:
+      return self.storage[".".join(prefix + [key])]
     else:
       return ''
     
