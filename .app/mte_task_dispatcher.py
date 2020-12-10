@@ -40,6 +40,7 @@ class TaskDispatcher:
       if lines[1].strip() == "# [MTETASK]":
         return True
     else:
+      self.core.log.add("File " + filename + " in tasks directory is not a task. File should be removed.", 2)
       return False
 
   def is_task(self, task):
