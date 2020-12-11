@@ -2,12 +2,12 @@
 # [MTETASK]
 #
 # [MTE] Maintenance Task: Pass
-# @Description: Don't do anything. Great for testing and 
+# @Description: Doesn't do anything. Great for testing and 
 #  to use as task template.
 #
 # @Author: Arne Coomans
 # @Contact: @arnecoomans on twitter
-# @Version: 0.0
+# @Version: 0.2.0
 # @Date: 01-01-2021
 # @Source: https://github.com/arnecoomans/maintenance/
 #
@@ -19,10 +19,12 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__) + "../.app/"))
 
 import mte_task_dispatcher
 
-
 class Task(mte_task_dispatcher.Task):
   def __init__(self, core, task_name):
+    # Run template task initiator
     super().__init__(core, task_name) 
 
+  # Everything that needs to be executed should be called from the
+  # execute function. 
   def execute(self):
     pass
