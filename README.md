@@ -9,3 +9,6 @@
 ## Usage
 
 ## Available tasks
+- pass
+- show_applied_config
+- backup_mysql
