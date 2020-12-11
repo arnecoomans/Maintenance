@@ -25,21 +25,21 @@ class Task(mte_task_dispatcher.Task):
 
   def execute(self):
     # First, display Core Configuration
-    self.core.log.content('# Core configuration')
+    self.core.log.add('# Core configuration', 0)
     for key, value in self.core.storage.items():
-      self.core.log.content(" "*2 + key + ": " + str(value))
+      self.core.log.add(" "*2 + key + ": " + str(value), 0)
     # Available tasks
-    self.core.log.content()
-    self.core.log.content("# Available tasks")
+    self.core.log.add('', 0)
+    self.core.log.add("# Available tasks", 0)
     for value in self.core.dispatcher.available_tasks:
-      self.core.log.content(" "*2 + "- " + value)
+      self.core.log.add(" "*2 + "- " + value, 0)
     # Then print Arguments
-    self.core.log.content()
-    self.core.log.content("# Command Line Arguments")
+    self.core.log.add('', 0)
+    self.core.log.add("# Command Line Arguments", 0)
     for value in sys.argv[1:]:
-      self.core.log.content(" "*2 + str(value))
+      self.core.log.add(" "*2 + str(value), 0)
     # Then print Application Configuration
-    self.core.log.content()
-    self.core.log.content("# Application Configuration")
+    self.core.log.add('', 0)
+    self.core.log.add("# Application Configuration", 0)
     for key, value in self.core.config.storage.items():
-      self.core.log.content(" "*2 + key + ": " + str(value))
+      self.core.log.add(" "*2 + key + ": " + str(value), 0)

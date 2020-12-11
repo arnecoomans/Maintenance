@@ -49,12 +49,12 @@ class Logger:
       self.add("Set log display level to [" + str(display_level) + "]", 4)
       self.display_level = display_level
   
-  def add(self, data, importance=5):
+  def add(self, data='', importance=5):
     self.storage.append( {'data': data, 
                           'importance': importance, 
                           'time': datetime.datetime.now()
                          } )
-  def content(self, data='', importance=-1):
+  def content(self, data='', importance=0):
     self.storage.append( {'data': data, 
                           'importance': importance, 
                           'time': datetime.datetime.now()
@@ -71,13 +71,13 @@ class Logger:
   def get_usable_loglines(self):
     usable_log = []
     for row in self.storage:
-      if row['importance'] < 0:
-        usable_log.append(row['data'])
+      if row['importance'] < 1:
+        usable_log.append(' '*4 + row['data'])
       elif row['importance'] <= self.display_level:
         usable_log.append(str(row['time']) + " [" + self.get_severity(row['importance']) + "] " + row['data'])
     return usable_log
   def get_header(self):
-    return "[  DATE  ] [     TIME    ] [  TYPE  ] [     MESSAGE"
+    return "[--DATE--] [-----TIME----] [--TYPE--] [-----MESSAGE-----"
 
 
   def display_log(self):
@@ -97,20 +97,20 @@ class Logger:
 
   def get_severity(self, display_level):
     if display_level == 0:
-      severity = 'critical'
+      severity = 'content'
     elif display_level == 1:
-      severity = 'error'
+      severity = 'critical'
     elif display_level == 2:
-      severity = 'warning'
+      severity = 'error'
     elif display_level == 3:
-      severity = 'notice'
+      severity = 'warning'
     elif display_level == 4:
-      severity = 'message'
+      severity = 'notice'
     else:
-      severity = ''
+      severity = '-'*8
     # Ensure displayed severity is exactly 8 characters long
     severity = severity[0:8]
     while len(severity) < 8:
       severity = severity + ' '
-    return severity
+    return severity[0:8]
     

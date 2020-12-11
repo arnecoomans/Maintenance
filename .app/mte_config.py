@@ -37,6 +37,8 @@ class Config:
     # Done
 
   def get_value(self, key, prefix=[]):
+    if len(prefix) > 0 and prefix[0] is not "task":
+      prefix = ['task'] + prefix
     if ".".join(prefix + [key]) in self.storage:
       return self.storage[".".join(prefix + [key])]
     else:

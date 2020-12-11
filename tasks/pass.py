@@ -2,7 +2,8 @@
 # [MTETASK]
 #
 # [MTE] Maintenance Task: Pass
-# @Description: Don't do anything. 
+# @Description: Don't do anything. Great for testing and 
+#  to use as task template.
 #
 # @Author: Arne Coomans
 # @Contact: @arnecoomans on twitter

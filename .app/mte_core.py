@@ -91,14 +91,17 @@ class Core:
       return False
 
   def get_sudo(self, task=''):
-    #self.config.get_value('run_as_root', ['task', 'test_sudo'])
-    if self.config.get_value('run_as_root') or self.config.get_value('run_as_root', ['task', task]) and not self.has_root_privilage():
+    if (self.config.get_value('can_use_sudo') and 
+         (self.config.get_value('run_as_root') or 
+          self.config.get_value('run_as_root', ['task', task])) 
+        and not self.has_root_privilage()):
       return "sudo "
     return ""
   
   # System command execution
   def run_command(self, command, task):
-    self.log.add('Executing os-level command: [' + self.get_sudo(task) + command + "].")
+    command = self.get_sudo(task) + command
+    self.log.add('Executing os-level command: [' + command + "].")
     command = os.popen(command)
     return command.read().strip().split("\n")
   #

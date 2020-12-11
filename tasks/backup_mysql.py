@@ -24,4 +24,14 @@ class Task(mte_task_dispatcher.Task):
     super().__init__(core, task_name) 
 
   def execute(self):
-    pass
+    self.core.log.add(str(self.remove_ignored_databases_from_list(self.get_list_of_all_databases())), 0)
+  
+  def get_list_of_all_databases(self):
+    return self.core.run_command('mysql -e \'show databases\' -s --skip-column-names', self.get_task_name())
+  
+  def remove_ignored_databases_from_list(self, list):
+    result = []
+    for database in list:
+      if database not in self.core.config.get_value('ignored_databases', [self.get_task_name()]).split(", ") and len(database) > 0:
+        result.append(database)
+    return result
