@@ -106,7 +106,8 @@ class Config:
           argument[1] = argument[1].strip()
         # Store the command line supplied configuration
         if task == '':
+          self.core.log.add("Command line argument supplied: ["+ str(argument[0]) + ": " + str(argument[1]) + "].", 4)
           self.set_value(argument[0], argument[1])
         elif task in self.core.dispatcher.available_tasks:
-          self.core.log.add("Command line argument supplied: [" + str(argument[0]) + ": " + str(argument[1]) + "].", 5)
+          self.core.log.add("Command line argument supplied: [" + str(argument[0]) + ": " + str(argument[1]) + "].", 4)
           self.set_value(argument[0], argument[1])

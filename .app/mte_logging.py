@@ -22,7 +22,8 @@ class Logger:
     self.display_level = display_level
     self.set_display_level(display_level)
     self.add_welcome()
-  
+    self.display_width = 80
+
   def __del__(self):
     self.display_log()
   # Setting display level
@@ -84,11 +85,10 @@ class Logger:
     if self.display_level == 5:
       print(self.get_header())
     # cap row length at set value. Indent to match date and message type
-    max_length = 128
     for row in self.get_usable_loglines():
-      while len(row) > max_length:
-        print(row[0:max_length])
-        row = " "*38 + row[max_length:]
+      while len(row) > self.display_width:
+        print(row[0:self.display_width])
+        row = " "*38 + row[self.display_width:]
       print(row)
   def write_log_to_file(self):
     pass
