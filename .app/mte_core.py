@@ -57,7 +57,7 @@ class Core:
 
     # Prepare Task Dispatcher
     self.dispatcher = mte_task_dispatcher.TaskDispatcher(self)
-    
+    self.config.get_runtime_arguments()
 
   #
   #

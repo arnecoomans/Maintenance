@@ -78,3 +78,35 @@ class Config:
       return True
     else:
       return False
+
+  def get_runtime_arguments(self):
+    # Check if runtime arguments are supplied for this task
+    if self.core.arguments.argument is not None:
+      # Arguments are supplied as a continious string. Split this into key/value pairs
+      arguments = self.core.arguments.argument.split(",")
+      # Walk through each argument-pair
+      for argument in arguments:
+        task = ''
+        # I made the mistake of using = and : to assign, meaning i couldn't choose.
+        # I think : is preferred, so let's replace = by : to allow both characters.
+        argument.replace('=',':')
+        argument = argument.split(':')
+        argument[0] = argument[0].strip()
+        # If the key contains a ., assume this is to assign sub-keys for a task.
+        if '.' in argument[0]:
+          task = argument[0].split('.')[0]
+          argument[0] = 'task.' + argument[0]
+        # If the string value True or False are parsed, change to the apropriate 
+        # bool values
+        if argument[1].lower() == "true":
+          argument[1] = True
+        elif argument[1].lower() == "false":
+          argument[1] = False
+        else:
+          argument[1] = argument[1].strip()
+        # Store the command line supplied configuration
+        if task == '':
+          self.set_value(argument[0], argument[1])
+        elif task in self.core.dispatcher.available_tasks:
+          self.core.log.add("Command line argument supplied: [" + str(argument[0]) + ": " + str(argument[1]) + "].", 5)
+          self.set_value(argument[0], argument[1])
