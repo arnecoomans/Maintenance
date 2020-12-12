@@ -3,10 +3,14 @@ maintenance:
   backup_target: "/backup/"
   gzip_target: True
   date_format_filename: "yyyymmdd"
-  tasks:
+  can_use_sudo: True
+  task:
+    test_sudo:
+      run_as_root: True
     backup_mysql:
       target_subdirectory: "mysql/"
       ignored_databases: "information_schema, mysql, performance_schema, sys"
+      run_as_root: True
     backup_config:
       target_subdirectory: "config/"
       keep_incremental: True
