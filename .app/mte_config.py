@@ -37,7 +37,7 @@ class Config:
     # Done
 
   def get_value(self, key, prefix=[]):
-    if len(prefix) > 0 and prefix[0] is not "task":
+    if len(prefix) > 0 and prefix[0] != "task":
       prefix = ['task'] + prefix
     if ".".join(prefix + [key]) in self.storage:
       return self.storage[".".join(prefix + [key])]
@@ -50,9 +50,12 @@ class Config:
   
   # Read Yaml configuration
   def get_contents_of_configuration_file(self, file):
+    # Validate that file actually exists
+    if not os.path.isfile(file):
+      self.core.log.add('Could not locate configuration file [' + file + ']. Skipping this file.', 3)
     # Validate that configuration file is .yml, .yaml or .conf
-    if os.path.splitext(file)[1] not in ['.yml', '.yaml', '.conf']:
-      self.core.log.add('Could not process configuration file ' + file + '. Extention not supported.', 1)
+    elif os.path.splitext(file)[1] not in ['.yml', '.yaml', '.conf']:
+      self.core.log.add('Could not process configuration file [' + file + ']. Extention not supported.', 1)
     else:
       self.configuration_files.append(file)
       # Load yaml configuration file

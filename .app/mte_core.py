@@ -52,12 +52,13 @@ class Core:
     self.config = mte_config.Config(self, self.storage['default_configuration'])
     self.log.set_display_level(self.config.get_value('logging'))
     #   Parse command line arguments
-    self.process_parsed_arguments( self.get_parsed_arguments() )
+    self.arguments = self.process_parsed_arguments( self.get_parsed_arguments() )
+    #   Check if at least some configuration is loaded
+
     # Prepare Task Dispatcher
     self.dispatcher = mte_task_dispatcher.TaskDispatcher(self)
-    # DEV
-    self.get_sudo('test_sudo')
     
+
   #
   #
   # Display Core information
@@ -120,7 +121,7 @@ class Core:
     #   Task Arguments
     parser.add_argument("-arg", "--argument",
                         help="Arguments passed to task",
-                        action="append")
+                        )
     #   Target Selection
     #   Overrides target defined by configuration module.
     parser.add_argument("--target", 

@@ -52,10 +52,7 @@ class TaskDispatcher:
     if task in self.available_tasks:
       return True
     return False
-  
-  def get_current_task(self):
-    pass
-  
+    
   def dispatch(self, task):
     self.core.log.add("Dispatched task: [" + task + "].", 4)
     if self.is_task(task):
@@ -72,9 +69,30 @@ class Task:
     self.task_name = task_name
     self.storage = {}
     self.queue = []
+    self.get_runtime_arguments()
     self.core.log.add("Loaded task: [" + self.get_task_name() + "].", 5)
     self.execute()
 
   def get_task_name(self):
     return self.task_name
+  
+  def get_runtime_arguments(self):
+    # Check if runtime arguments are supplied for this task
+    if self.core.arguments.argument is not None:
+      arguments = self.core.arguments.argument.split(",")
+      for argument in arguments:
+        argument.replace('=',':')
+        argument = argument.split(':')
+        if '.' in argument[0]:
+          argument[0] = 'task.' + argument[0]
+        argument[0] = argument[0].strip()
+        if argument[1].lower() == "true":
+          argument[1] = True
+        elif argument[1].lower() == "false":
+          argument[1] = False
+        else:
+          argument[1] = argument[1].strip()
+        
+        self.core.config.set_value(argument[0], argument[1])
+
     
