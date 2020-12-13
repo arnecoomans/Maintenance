@@ -164,7 +164,6 @@ class Core:
       return '| gzip '
     else:
       return ''
-  
 
   # System command execution
   def run_command(self, command, task, sudo=True):
