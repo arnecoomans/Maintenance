@@ -6,7 +6,7 @@
 #
 # @Author: Arne Coomans
 # @Contact: @arnecoomans on twitter
-# @Version: 0.0
+# @Version: 0.2.0
 # @Date: 01-01-2021
 # @Source: https://github.com/arnecoomans/maintenance/
 #

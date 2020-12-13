@@ -1,6 +1,7 @@
 # [MTE] Maintenance Task Execution: Entry Point
 - Author: Arne Coomans
 - Contact: twitter @arnecoomans
+- Version: 0.2.0
 
 ## About
 
