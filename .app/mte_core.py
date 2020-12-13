@@ -43,6 +43,8 @@ class Core:
       'base_dir': os.path.split(os.path.dirname(os.path.abspath(__file__)))[0] + '/',
       'default_configuration': 'config/maintenance.yml',
       'runtime_user': getpass.getuser(),
+      'runtime_user_id': str(os.getuid()),
+      'runtime_group_id': str(os.getgid()),
       'has_root_privilage': self.has_root_privilage(),
     }
     # Actual processing
@@ -50,7 +52,7 @@ class Core:
     self.log = mte_logging.Logger(self)
     #   Load configuration file
     self.config = mte_config.Config(self, self.storage['default_configuration'])
-    self.log.set_display_level(self.config.get_value('logging'))
+    self.log.set_display_level(self.config.get('logging'))
     #   Parse command line arguments
     self.arguments = self.process_parsed_arguments( self.get_parsed_arguments() )
     #   Check if at least some configuration is loaded
@@ -92,18 +94,38 @@ class Core:
       return False
 
   def get_sudo(self, task=''):
-    if (self.config.get_value('can_use_sudo') and 
-         (self.config.get_value('run_as_root') or 
-          self.config.get_value('run_as_root', ['task', task])) 
+    if (self.config.get('can_use_sudo') and 
+         (self.config.get('run_as_root') or 
+          self.config.get('run_as_root', ['task', task])) 
         and not self.has_root_privilage()):
       return "sudo "
     return ""
   
 
-  def get_verified_directory(self, directory):
-    # @todo
+  def get_verified_directory(self, directory, task):
+    if directory[-1:] == '/':
+      directory = directory[0:-1]
+    path = ''
+    for part in directory.split('/'):
+      if len(part) == 0:
+        path += '/'
+      else:
+        path += part + '/'
+        if not os.path.isdir(path):
+          # directory does not exist.
+          # If in root, use sudo
+          if len(path.split('/')) <= 3:
+            self.log.add("Need root to create directory [" + path + "] in root level.", 4)
+            self.run_command('mkdir ' + path, task)
+            self.log.add("Changing ownership of newly created directory to " + self.get('runtime_user'), 4)
+            self.run_command('chown ' + self.get('runtime_user_id') + ':' + self.get('runtime_group_id') + ' ' + path, task)
+          else:
+            self.log.add('Creating directory [' + path + ']', 4)
+            self.run_command('mkdir ' + path, task, False)
     # should create directories if required
     # should use sudo for top level directory
+    if directory[:-1] != '/':
+      directory += '/'
     return directory
   
   def get_target(self, task):
@@ -113,18 +135,18 @@ class Core:
     target = ''
     subdirectory = ''
     # backup_target
-    if self.config.get_value('backup_target', task):
-      target = self.config.get_value('backup_target', task)
-    elif self.config.get_value('backup_target'):
-      target = self.config.get_value('backup_target')
+    if self.config.get('backup_target', task):
+      target = self.config.get('backup_target', task)
+    elif self.config.get('backup_target'):
+      target = self.config.get('backup_target')
     # target subdirectory
-    if self.config.get_value('target_subdirectory', task):
-      subdirectory = self.config.get_value('target_subdirectory', task)
-    elif self.config.get_value('target_subdirectory'):
+    if self.config.get('target_subdirectory', task):
+      subdirectory = self.config.get('target_subdirectory', task)
+    elif self.config.get('target_subdirectory'):
       # Only use subdirectory from global configuration if the backup_target
       #  is set in global configuration
-      if not self.config.get_value('backup_target', task):
-        subdirectory = self.config.get_value('target_subdirectory')
+      if not self.config.get('backup_target', task):
+        subdirectory = self.config.get('target_subdirectory')
     # Cleanup
     if len(target) > 1 and target[-1:] != '/':
       target += '/'
@@ -133,20 +155,21 @@ class Core:
     if len(subdirectory) > 1 and subdirectory[-1:] != '/':
       subdirectory += '/'
     
-    return self.get_verified_directory(target + subdirectory)
+    return self.get_verified_directory(target + subdirectory, task)
   
   def get_gzip(self, task):
-    if self.config.get_value('gzip_target', task):
+    if self.config.get('gzip_target', task):
       return '| gzip '
-    elif not self.config.get_value('gzip_target', task) and self.config.get_value('gzip_target'):
+    elif self.config.get('gzip_target', task) is not False and self.config.get('gzip_target'):
       return '| gzip '
     else:
       return ''
   
 
   # System command execution
-  def run_command(self, command, task):
-    command = self.get_sudo(task) + command
+  def run_command(self, command, task, sudo=True):
+    if sudo:
+      command = self.get_sudo(task) + command
     self.log.add('Executing os-level command: [' + command + "].")
     command = os.popen(command)
     return command.read().strip().split("\n")
@@ -195,8 +218,8 @@ class Core:
       self.tasks = arguments.task
     # Target selection
     if arguments.target is not None:
-      self.log.add("Command line arguments changed backup target from " + self.config.get_value('backup_target') + " to " + arguments.target + ".", 4)
-      self.config.set_value('backup_target', arguments.target)
+      self.log.add("Command line arguments changed backup target from " + self.config.get('backup_target') + " to " + arguments.target + ".", 4)
+      self.config.set('backup_target', arguments.target)
     # Configuration File selection
     if arguments.config is not None:
       for file in arguments.config:
@@ -206,6 +229,6 @@ class Core:
     if arguments.logging is not None:
       if arguments.logging is not self.log.display_level:
         self.log.add('Command line arguments changed log display level from ' + str(self.log.display_level) + " to " + str(arguments.logging) + ".", 4)
-        self.config.set_value('logging', arguments.logging)
+        self.config.set('logging', arguments.logging)
         self.log.set_display_level(arguments.logging)
     return arguments

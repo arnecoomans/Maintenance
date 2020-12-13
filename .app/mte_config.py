@@ -23,14 +23,14 @@ class Config:
     self.get_contents_of_configuration_file(configuration_file)
 
   # Storage access functions
-  def set_value(self, key, value, prefix=[]):
+  def set(self, key, value, prefix=[]):
     # Ensure prefix is a list.
     if type(prefix) is not list:
       prefix = [str(prefix)]
     # If the stored value is a dict, it should be flattened. 
     if type(value) is dict:
       for subkey, subvalue in value.items():
-        self.set_value(subkey, subvalue, prefix + [key])
+        self.set(subkey, subvalue, prefix + [key])
     # Store the (key prefix,) key and value
     else:
       if type(value) == str:
@@ -38,7 +38,7 @@ class Config:
       self.storage[".".join(prefix + [key])] = value
     # Done
 
-  def get_value(self, key, prefix=[]):
+  def get(self, key, prefix=[]):
     if type(prefix) is str:
       prefix = [prefix]
     if len(prefix) > 0 and prefix[0] != "task":
@@ -75,7 +75,7 @@ class Config:
             value = value.split(",")
             for file in value:
               self.get_contents_of_configuration_file(file.strip())
-          self.set_value(key, value)
+          self.set(key, value)
     # Done
 
   # Check if configuration files have been processed. 
@@ -121,7 +121,7 @@ class Config:
         # Store the command line supplied configuration
         if task == '':
           self.core.log.add("Command line argument supplied: ["+ str(argument[0]) + ": " + str(argument[1]) + "].", 4)
-          self.set_value(argument[0], argument[1])
+          self.set(argument[0], argument[1])
         elif task in self.core.dispatcher.available_tasks:
           self.core.log.add("Command line argument supplied: [" + str(argument[0]) + ": " + str(argument[1]) + "].", 4)
-          self.set_value(argument[0], argument[1])
+          self.set(argument[0], argument[1])
