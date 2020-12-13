@@ -31,7 +31,7 @@ class Task(mte_task_dispatcher.Task):
 
   def execute(self):
     # Creating a backup of all databases
-    self.core.log.add('Getting list of databases to be backed up', 5)
+    self.core.log.add('Getting list of databases to be backed up', 4)
     databases = self.remove_ignored_databases_from_list(self.get_list_of_all_databases())
     self.core.log.add('Found databases: [' + ', '.join(databases) + '].', 5)
     for database in databases:
@@ -67,5 +67,6 @@ class Task(mte_task_dispatcher.Task):
     if len(self.core.get_gzip(self.get_task_name())) > 0:
       filename += '.tar.gz'
     command = command.replace('%filename%', filename)
+    self.core.log.add("Backing up [" + database + "] to " + self.core.get_target(self.get_task_name()) + filename, 4)
     self.core.run_command(command, self.get_task_name())
     

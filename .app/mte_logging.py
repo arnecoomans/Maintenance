@@ -47,7 +47,7 @@ class Logger:
       display_level = 5
     # Display level has been set, this can be logged
     if self.display_level != display_level:
-      self.add("Set log display level to [" + str(display_level) + "]", 4)
+      self.add("Set log display level to [" + str(display_level) + "]", 5)
       self.display_level = display_level
   
   def add(self, data='', importance=5):
