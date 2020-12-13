@@ -99,6 +99,51 @@ class Core:
       return "sudo "
     return ""
   
+
+  def get_verified_directory(self, directory):
+    # @todo
+    # should create directories if required
+    # should use sudo for top level directory
+    return directory
+  
+  def get_target(self, task):
+    # backup_target can be defined in task or core config
+    # target_subdirectory can be defined in task or core config
+    # task config overrules core config
+    target = ''
+    subdirectory = ''
+    # backup_target
+    if self.config.get_value('backup_target', task):
+      target = self.config.get_value('backup_target', task)
+    elif self.config.get_value('backup_target'):
+      target = self.config.get_value('backup_target')
+    # target subdirectory
+    if self.config.get_value('target_subdirectory', task):
+      subdirectory = self.config.get_value('target_subdirectory', task)
+    elif self.config.get_value('target_subdirectory'):
+      # Only use subdirectory from global configuration if the backup_target
+      #  is set in global configuration
+      if not self.config.get_value('backup_target', task):
+        subdirectory = self.config.get_value('target_subdirectory')
+    # Cleanup
+    if len(target) > 1 and target[-1:] != '/':
+      target += '/'
+    if subdirectory[:1] == '/':
+      subdirectory = subdirectory[1:]
+    if len(subdirectory) > 1 and subdirectory[-1:] != '/':
+      subdirectory += '/'
+    
+    return self.get_verified_directory(target + subdirectory)
+  
+  def get_gzip(self, task):
+    if self.config.get_value('gzip_target', task):
+      return '| gzip '
+    elif not self.config.get_value('gzip_target', task) and self.config.get_value('gzip_target'):
+      return '| gzip '
+    else:
+      return ''
+  
+
   # System command execution
   def run_command(self, command, task):
     command = self.get_sudo(task) + command

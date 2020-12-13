@@ -33,10 +33,14 @@ class Config:
         self.set_value(subkey, subvalue, prefix + [key])
     # Store the (key prefix,) key and value
     else:
+      if type(value) == str:
+        value = value.strip()
       self.storage[".".join(prefix + [key])] = value
     # Done
 
   def get_value(self, key, prefix=[]):
+    if type(prefix) is str:
+      prefix = [prefix]
     if len(prefix) > 0 and prefix[0] != "task":
       prefix = ['task'] + prefix
     if ".".join(prefix + [key]) in self.storage:
@@ -108,6 +112,10 @@ class Config:
           argument[1] = True
         elif argument[1].lower() == "false":
           argument[1] = False
+        elif argument[1].lower() == "none":
+          argument[1] = None
+        elif str(int(argument[1])) == argument[1]:
+          argument[1] = int(argument[1])
         else:
           argument[1] = argument[1].strip()
         # Store the command line supplied configuration

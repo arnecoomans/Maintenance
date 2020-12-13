@@ -42,4 +42,4 @@ class Task(mte_task_dispatcher.Task):
     self.core.log.add('', 0)
     self.core.log.add("# Application Configuration", 0)
     for key, value in self.core.config.storage.items():
-      self.core.log.add(" "*2 + key + ": " + str(value), 0)
+      self.core.log.add(" "*2 + key + ": " + str(value) + " (" + str(type(value)) + ")", 0)
