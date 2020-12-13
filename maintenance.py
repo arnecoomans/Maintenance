@@ -21,7 +21,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/.app/")
 import mte_core as mte_core
 
 #   Tasks storage library
-#sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/tasks/")
+sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/tasks/")
 
 # Load Core
 #   Core handles basic functionality such as runtime argument processing.
