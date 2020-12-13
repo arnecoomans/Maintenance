@@ -50,6 +50,8 @@ class Config:
   
   # Read Yaml configuration
   def get_contents_of_configuration_file(self, file):
+    self.core.log.add('Parsing configuration file: [' + file + '].', 5)
+    file = self.core.get('base_dir') + file
     # Validate that file actually exists
     if not os.path.isfile(file):
       self.core.log.add('Could not locate configuration file [' + file + ']. Skipping this file.', 3)
@@ -65,6 +67,10 @@ class Config:
         document = document['maintenance']
         # Store each key and value into the configuration storage container
         for key, value in document.items():
+          if key == "!import":
+            value = value.split(",")
+            for file in value:
+              self.get_contents_of_configuration_file(file.strip())
           self.set_value(key, value)
     # Done
 
