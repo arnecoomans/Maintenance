@@ -67,7 +67,7 @@ class Config:
         document = document['maintenance']
         # Store each key and value into the configuration storage container
         for key, value in document.items():
-          if key == "!import":
+          if key == "import":
             value = value.split(",")
             for file in value:
               self.get_contents_of_configuration_file(file.strip())
