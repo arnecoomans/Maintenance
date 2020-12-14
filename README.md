@@ -19,6 +19,8 @@ Additional configuration overwrites previously set configuration. --args is proc
 ## Usage
 
 ## Available tasks
-- pass
-- show_config
-- backup_mysql
+- pass - do nothing. Great for testing.
+- show_config - show config as is applied in the application.
+- backup_config - create backup of file if content differs from last known backup.
+- backup_mysql - create mysql dump of specified databases.
+- 
