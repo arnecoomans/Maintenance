@@ -56,17 +56,13 @@ class Task(mte_task_dispatcher.Task):
     filename = database
     now = datetime.now()
     # Check if task configuration holds date_time_format
-    if self.core.config.get('date_time_format', self.get_task_name()):
+    if self.core.config.get('date_time_format', self.get_task_name(), True):
       filename += '_'
       filename += datetime.now().strftime(self.core.config.get('date_time_format', self.get_task_name()))
-    # Check if main configuration holds date_time_format
-    elif self.core.config.get('date_time_format'):
-      filename += '_'
-      filename += datetime.now().strftime(self.core.config.get('date_time_format'))
     filename += '.sql'
     if len(self.core.get_gzip(self.get_task_name())) > 0:
       filename += '.tar.gz'
     command = command.replace('%filename%', filename)
-    self.core.log.add("Backing up [" + database + "] to " + self.core.get_target(self.get_task_name()) + filename, 4)
+    self.core.log.add('Backing up [' + database + '] to [' + self.core.get_target(self.get_task_name()) + filename + ']', 4)
     self.core.run_command(command, self.get_task_name())
     

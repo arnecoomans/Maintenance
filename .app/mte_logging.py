@@ -22,7 +22,7 @@ class Logger:
     self.display_level = display_level
     self.set_display_level(display_level)
     self.add_welcome()
-    self.display_width = 80
+    self.display_width = 79
 
   def __del__(self):
     self.display_log()

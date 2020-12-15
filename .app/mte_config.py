@@ -38,15 +38,18 @@ class Config:
       self.storage[".".join(prefix + [key])] = value
     # Done
 
-  def get(self, key, prefix=[]):
+  def get(self, key, prefix=[], fallback=False):
     if type(prefix) is str:
       prefix = [prefix]
     if len(prefix) > 0 and prefix[0] != "task":
       prefix = ['task'] + prefix
     if ".".join(prefix + [key]) in self.storage:
       return self.storage[".".join(prefix + [key])]
+    elif fallback and key in self.storage:
+      return self.storage[key]
     else:
       return ''
+  
     
   def has_value(self, key):
     # @todo
