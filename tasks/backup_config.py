@@ -36,8 +36,8 @@ class Task(mte_task_dispatcher.Task):
       self.sources.append(item.strip())
     self.queries = {
       'create_table': 'CREATE TABLE ' + self.dbtable + ' (file text, hash text, date text)',
-      'select_file': 'SELECT hash, date FROM ' + self.dbtable + ' WHERE file="?" ORDER BY rowid;',
-      'insert_file': 'INSERT INTO ' + self.dbtable + '(?, ?, ?)'
+      'select_file': 'SELECT * FROM ' + self.dbtable + ' WHERE file=? ORDER BY rowid DESC',
+      'insert_file': 'INSERT INTO ' + self.dbtable + ' VALUES (?, ?, ?)'
     }
     # Run template task initiator
     super().__init__(core, task_name) 
@@ -102,12 +102,16 @@ class Task(mte_task_dispatcher.Task):
   # Stored hash
   def get_stored_hash(self, file):
     if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
-      self.get_cursor().execute(self.queries['select_file'], file)
-
-
-    return {'hash':'80985646f3f355355cca7596c05d41a7ad59addf2', 'date':'yesterday'}
+      self.get_cursor().execute(self.queries['select_file'], (file,))
+      return self.get_cursor().fetchone()
 
   def store_hash(self, file, hash):
+    if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
+      self.get_cursor().execute(self.queries['insert_file'], (file, hash, 'now'))
+      self.get_db_connection().commit()
+  
+  # Creating backups
+  def create_backup(self, file):
     pass
 
 
@@ -130,23 +134,30 @@ class Task(mte_task_dispatcher.Task):
 
   # Compare file hash with stored hash
   def compare_file_hash(self, file):
-    self.core.log.add('Checking hash for ' + file, 5)
     # Get current hash
     current_hash = self.get_file_hash(file)
     # get stored_hash
     stored_hash = self.get_stored_hash(file)
-    if current_hash == stored_hash['hash']:
-      self.core.log.add('Hashes match')
-    else:
-      self.core.log.add('New version of [' + file + '] found. Last known version date is: [' + stored_hash['date'] + '].', 4)
+    #self.core.log.add(str(stored_hash))
+    if stored_hash is None:
+      self.core.log.add('New file [' + file + ']. Processing.', 4)
+      self.create_backup(file)
       self.store_hash(file, current_hash)
-    #self.core.log.add('Current hash: ' + current_hash)
-    self.core.log.add('Stored hash:  ' + stored_hash['hash'])
+    elif current_hash == stored_hash[1]:
+      self.core.log.add('No change detected in [' + file + '].')
+    else:
+      self.core.log.add('Change detected in [' + file + ' ]. Processing.', 4)
+      self.create_backup(file)
+      self.store_hash(file, current_hash)
+
+
+
+
 
 
 
 # DATABASE FUNCTIONS
- def get_db_connection(self):
+  def get_db_connection(self):
     if not self.db:
       if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
         # Check if database is present. If the database is not present, tables should be created
@@ -184,41 +195,7 @@ class Task(mte_task_dispatcher.Task):
 
 
 
-  #def process_source(self, source):
-    
-    # Loop through sources. Sources can contain files or directories.
-    # If the source is a file:
-  #  if os.path.isfile(source):
-#      self.core.log.add('This source is actually a file:' + source )
-#      self.compare_file(source)
-    # If the source is a directory, process the contents
-  #  if os.path.isdir(source):
-      # 
-  #    if source[-1:] != '/':
-  #      source += '/'
-  #    for file in os.listdir(source):
-  #      file = source + file
-  #      if os.path.isfile(file):
-  #        self.core.log.add(file + ' found') 
-  #      elif os.path.isdir(file):
-  #        self.core.log.add(file + ' is a dir?')
-  #      else:
-  #        self.core.log.add('whats up with ' + file)
 
-#  def compare_file2(self, file):
-#    self.core.log.add('Comparing ' + file)
-#    if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
-#      self.core.log.add(self.queries['select_file'])
-#      #self.get_cursor().execute(self.queries['select_file'], file)
-#      self.get_cursor().execute('SELECT * FROM files WHERE file=? ORDER BY DATE', (file,))
-#      self.core.log.add('fetched: ' + str(self.get_cursor().fetchall()))
-#  
-#  def store_file_hash(self, file):
-#    self.core.log('Storing hash for ' + file)#
-
-
-  # Storage functions
- 
     
 
 
