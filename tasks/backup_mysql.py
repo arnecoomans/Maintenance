@@ -57,11 +57,11 @@ class Task(mte_task_dispatcher.Task):
     command = command.replace('%target%', self.core.get_target(self.get_task_name()))
     # Filename
     filename = database
-    #now = datetime.now()
+    
     # Check if task configuration holds date_time_format
     if self.core.config.get('date_time_format', self.get_task_name(), True):
       filename += '_'
-      filename += datetime.now().strftime(self.core.config.get('date_time_format', self.get_task_name()))
+      filename += self.core.get_date_time(self.get_task_name())
     filename += '.sql'
     if self.core.get_gzip(self.get_task_name()):
       filename += '.tar.gz'
