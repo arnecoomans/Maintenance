@@ -48,19 +48,22 @@ class Task(mte_task_dispatcher.Task):
   
   def dump_database(self, database):
     # process command
+    gzip = ''
     command = self.command_line_commands['dump_database']
     command = command.replace('%database%', database)
-    command = command.replace('%gzip%', self.core.get_gzip(self.get_task_name()))
+    if self.core.get_gzip(self.get_task_name()):
+      gzip = '| gzip '
+    command = command.replace('%gzip%', gzip)
     command = command.replace('%target%', self.core.get_target(self.get_task_name()))
     # Filename
     filename = database
-    now = datetime.now()
+    #now = datetime.now()
     # Check if task configuration holds date_time_format
     if self.core.config.get('date_time_format', self.get_task_name(), True):
       filename += '_'
       filename += datetime.now().strftime(self.core.config.get('date_time_format', self.get_task_name()))
     filename += '.sql'
-    if len(self.core.get_gzip(self.get_task_name())) > 0:
+    if self.core.get_gzip(self.get_task_name()):
       filename += '.tar.gz'
     command = command.replace('%filename%', filename)
     self.core.log.add('Backing up [' + database + '] to [' + self.core.get_target(self.get_task_name()) + filename + ']', 4)

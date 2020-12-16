@@ -16,6 +16,8 @@ import sys
 import time
 import argparse
 import getpass
+from datetime import datetime
+
 
 
 # Add local shared script directory to import path
@@ -135,10 +137,8 @@ class Core:
     target = ''
     subdirectory = ''
     # backup_target
-    if self.config.get('backup_target', task):
-      target = self.config.get('backup_target', task)
-    elif self.config.get('backup_target'):
-      target = self.config.get('backup_target')
+    if self.config.get('backup_target', task, True):
+      target = self.config.get('backup_target', task, True)
     # target subdirectory
     if self.config.get('target_subdirectory', task):
       subdirectory = self.config.get('target_subdirectory', task)
@@ -159,11 +159,16 @@ class Core:
   
   def get_gzip(self, task):
     if self.config.get('gzip_target', task):
-      return '| gzip '
+      return True
     elif self.config.get('gzip_target', task) is not False and self.config.get('gzip_target'):
-      return '| gzip '
+      return True
     else:
-      return ''
+      return False
+    
+  def get_date_time(self, task):
+    #format = self.core.get('date_time_format', task)
+    #return self.config.get('date_time_format', task, True)
+    return datetime.now().strftime(self.config.get('date_time_format', task, True))
 
   # System command execution
   def run_command(self, command, task, sudo=True):
