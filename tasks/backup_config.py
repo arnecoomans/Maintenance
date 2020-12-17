@@ -46,7 +46,6 @@ class Task(mte_task_dispatcher.Task):
 
     
 
-    #self.core.log.add(self.get_file_signature('maintenance.py'))
   
   def __del__(self):
     #self.close_connection()
@@ -128,7 +127,7 @@ class Task(mte_task_dispatcher.Task):
     if self.core.get_gzip(self.get_task_name()):
       gzip = '| gzip '
 
-    self.core.log.add('Creating physical backup of [' + file + ']. in [' + destination + '].', 5)
+    #self.core.log.add('Creating physical backup of [' + file + ']. in [' + destination + '].', 5)
     self.core.run_command('cat ' + file + gzip + ' > ' + destination + target_file['filename'], self.get_task_name())
     return destination + target_file['filename']
 
@@ -148,11 +147,9 @@ class Task(mte_task_dispatcher.Task):
     elif os.path.isdir(source):
       # Loop through directory, process files
       # Only process directories if recursive is set to true
-      self.core.log.add('Directory found: ' + source)
       if source[-1:] != '/':
         source += '/'
       for file in os.listdir(source):
-        self.core.log.add(source + file)
         if os.path.isfile(source + file):
           self.parse_source(source + file)
         elif os.path.isdir(source + file):
@@ -166,19 +163,16 @@ class Task(mte_task_dispatcher.Task):
     current_hash = self.get_file_hash(file)
     # get stored_hash
     stored_hash = self.get_stored_hash(file)
-    #self.core.log.add(str(stored_hash))
     if stored_hash is None:
       self.core.log.add('New file [' + file + ']. Processing.', 4)
       backup_location = self.create_backup(file)
-      self.core.log.add(backup_location)
       self.store_hash(file, current_hash, backup_location)
     elif current_hash == stored_hash[1]:
-      self.core.log.add('No change detected in [' + file + '].')
+      #self.core.log.add('No change detected in [' + file + '].')
       pass
     else:
       self.core.log.add('Change detected in [' + file + ' ]. Processing.', 4)
       backup_location = self.create_backup(file)
-      self.core.log.add(backup_location)
       self.store_hash(file, current_hash, backup_location)
 
 
