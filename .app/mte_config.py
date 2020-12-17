@@ -38,18 +38,32 @@ class Config:
       self.storage[".".join(prefix + [key])] = value
     # Done
 
-  def get(self, key, prefix=[], fallback=False):
-    if type(prefix) is str:
+  def get(self, key, prefix=[], exact=False):
+    # First ensure that prefix is a list.
+    if type(prefix) is not list:
       prefix = [prefix]
-    if len(prefix) > 0 and prefix[0] != "task":
-      prefix = ['task'] + prefix
-    if ".".join(prefix + [key]) in self.storage:
-      return self.storage[".".join(prefix + [key])]
-    elif fallback and key in self.storage:
-      return self.storage[key]
+    #if len(prefix) > 0 and prefix[0] != "task":
+    #  prefix = ['task'] + prefix
+    # Try exact Prefix
+    #
+    # 
+    # if no prefix is supplied, try for an exact match
+    if len(prefix) == 0:
+      if key in self.storage:
+        return self.storage[key]
+      else:
+        return ''
     else:
-      return ''
-  
+      # A prefix is supplied.
+      # Check if [prefix.key] exists
+      if '.'.join(prefix + [key]) in self.storage:
+        return self.storage[join(prefix + [key])]
+      elif '.'.join(['task'] + prefix + [key]) in self.storage:
+        return '.'.join(['task'] + prefix + [key])
+      elif not exact and key in self.storage:
+        return self.storage[key]
+      else:
+        return ''
     
   def has_value(self, key):
     # @todo
