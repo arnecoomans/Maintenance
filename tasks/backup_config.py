@@ -65,8 +65,8 @@ class Task(mte_task_dispatcher.Task):
   # Data Getters
   # Get date format
   def get_date_format(self):
-    if self.core.config.get('date_time_format', self.get_task_name(), True):
-      return self.core.config.get('date_time_format', self.get_task_name(), True)
+    if self.core.config.get('date_time_format', self.get_task_name()):
+      return self.core.config.get('date_time_format', self.get_task_name())
     else:
       return ''
   
@@ -82,8 +82,8 @@ class Task(mte_task_dispatcher.Task):
 
   # Get Hash Type
   def get_hash_type(self):
-    if self.core.config.get('hash_type', self.get_task_name(), True):
-      return self.core.config.get('hash_type', self.get_task_name(), True)
+    if self.core.config.get('hash_type', self.get_task_name()):
+      return self.core.config.get('hash_type', self.get_task_name())
     else:
       return ''
   

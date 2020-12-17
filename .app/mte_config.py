@@ -59,7 +59,7 @@ class Config:
       if '.'.join(prefix + [key]) in self.storage:
         return self.storage[join(prefix + [key])]
       elif '.'.join(['task'] + prefix + [key]) in self.storage:
-        return '.'.join(['task'] + prefix + [key])
+        return self.storage['.'.join(['task'] + prefix + [key])]
       elif not exact and key in self.storage:
         return self.storage[key]
       else:
