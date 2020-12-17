@@ -95,10 +95,9 @@ class Core:
     else:
       return False
 
-  def get_sudo(self, task=''):
-    if (self.config.get('can_use_sudo') and 
-         (self.config.get('run_as_root') or 
-          self.config.get('run_as_root', ['task', task])) 
+  def get_sudo(self, task=None):
+    if (self.config.get('can_use_sudo', task) and 
+        self.config.get('run_as_root', task)
         and not self.has_root_privilage()):
       return "sudo "
     return ""
@@ -137,15 +136,15 @@ class Core:
     target = ''
     subdirectory = ''
     # backup_target
-    if self.config.get('backup_target', task, True):
-      target = self.config.get('backup_target', task, True)
+    if self.config.get('backup_target', task):
+      target = self.config.get('backup_target', task)
     # target subdirectory
     if self.config.get('target_subdirectory', task):
       subdirectory = self.config.get('target_subdirectory', task)
     elif self.config.get('target_subdirectory'):
       # Only use subdirectory from global configuration if the backup_target
       #  is set in global configuration
-      if not self.config.get('backup_target', task):
+      if not self.config.get('backup_target', task, True):
         subdirectory = self.config.get('target_subdirectory')
     # Cleanup
     if len(target) > 1 and target[-1:] != '/':
@@ -160,15 +159,11 @@ class Core:
   def get_gzip(self, task):
     if self.config.get('gzip_target', task):
       return True
-    elif self.config.get('gzip_target', task) is not False and self.config.get('gzip_target'):
-      return True
     else:
       return False
     
   def get_date_time(self, task):
-    #format = self.core.get('date_time_format', task)
-    #return self.config.get('date_time_format', task, True)
-    return datetime.now().strftime(self.config.get('date_time_format', task, True))
+    return datetime.now().strftime(self.config.get('date_time_format', task))
 
   # System command execution
   def run_command(self, command, task, sudo=True):

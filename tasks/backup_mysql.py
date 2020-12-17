@@ -42,7 +42,7 @@ class Task(mte_task_dispatcher.Task):
   def remove_ignored_databases_from_list(self, list):
     result = []
     for database in list:
-      if database not in self.core.config.get('ignored_databases', [self.get_task_name()]).split(", ") and len(database) > 0:
+      if database not in self.core.config.get('ignored_databases', self.get_task_name()).split(", ") and len(database) > 0:
         result.append(database)
     return result
   
@@ -59,7 +59,7 @@ class Task(mte_task_dispatcher.Task):
     filename = database
     
     # Check if task configuration holds date_time_format
-    if self.core.config.get('date_time_format', self.get_task_name(), True):
+    if self.core.config.get('date_time_format', self.get_task_name()):
       filename += '_'
       filename += self.core.get_date_time(self.get_task_name())
     filename += '.sql'
