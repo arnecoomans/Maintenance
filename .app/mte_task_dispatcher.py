@@ -28,7 +28,7 @@ class TaskDispatcher:
 
   def inventorize_tasks(self):
     # Check for installed tasks on filesystem
-    for filename in os.listdir(self.core.get('base_dir') + 'tasks/'):
+    for filename in os.listdir(self.core.get('base_dir') + 'tasks-enabled/'):
       if os.path.splitext(filename)[1] == ".py":
         if self.is_marked_as_task(filename):
           self.available_tasks.append(os.path.splitext(filename)[0])
@@ -38,7 +38,7 @@ class TaskDispatcher:
     # Tasks should have "# [MTETASK]" as second line in the file
     # This marks that the file is a task and it should be executed as task.
     # This prevents other files being ran in the task dispatcher.
-    f=open(self.core.get('base_dir') + 'tasks/' + filename)
+    f=open(self.core.get('base_dir') + 'tasks-enabled/' + filename)
     lines=f.readlines()
     if len(lines) > 2:
       if lines[1].strip() == "# [MTETASK]":
@@ -46,7 +46,7 @@ class TaskDispatcher:
         return True
     else:
       f.close()
-      self.core.log.add("File " + filename + " in tasks directory is not a task. File should be removed.", 2)
+      self.core.log.add("File " + filename + " in tasks-enabled directory is not a task. File should be removed.", 2)
       return False
 
   def is_task(self, task):

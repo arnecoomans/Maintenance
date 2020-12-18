@@ -49,7 +49,7 @@ class Core:
       'runtime_group_id': str(os.getgid()),
       'has_root_privilage': self.has_root_privilage(),
       # Self-check
-      'required_directories': ['data/', 'cache/']
+      'required_directories': ['cache/', 'data/', 'docs/', 'tasks-available/', 'tasks-enabled']
     }
     # Actual processing
     #   Prepare logging
