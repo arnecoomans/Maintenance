@@ -1,6 +1,7 @@
 # Do not store configuration in git
 config/*.yml
 data/
+cache/
 
 
 # Source: https://github.com/github/gitignore/blob/master/Python.gitignore

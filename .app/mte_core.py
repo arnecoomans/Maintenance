@@ -48,6 +48,8 @@ class Core:
       'runtime_user_id': str(os.getuid()),
       'runtime_group_id': str(os.getgid()),
       'has_root_privilage': self.has_root_privilage(),
+      # Self-check
+      'required_directories': ['data/', 'cache/']
     }
     # Actual processing
     #   Prepare logging
@@ -58,7 +60,10 @@ class Core:
     #   Parse command line arguments
     self.arguments = self.process_parsed_arguments( self.get_parsed_arguments() )
     #   Check if at least some configuration is loaded
-
+    #
+    # Self-care
+    self.verify_required_directories()
+    #
     # Prepare Task Dispatcher
     self.dispatcher = mte_task_dispatcher.TaskDispatcher(self)
     self.config.get_runtime_arguments()
@@ -129,6 +134,10 @@ class Core:
       directory += '/'
     return directory
   
+  def verify_required_directories(self):
+    for directory in self.get('required_directories'):
+      self.get_verified_directory(self.get('base_dir') + directory, 'core')
+
   def get_target(self, task):
     # backup_target can be defined in task or core config
     # target_subdirectory can be defined in task or core config
