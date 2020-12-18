@@ -15,7 +15,7 @@ import os
 import sys
 import importlib
 
-sys.path.append(os.path.dirname(os.path.abspath(__file__) + "../tasks/"))
+sys.path.append(os.path.dirname(os.path.abspath(__file__) + "../tasks-enabled/"))
 
 class TaskDispatcher:
   def __init__(self, core):
