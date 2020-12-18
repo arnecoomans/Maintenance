@@ -72,9 +72,21 @@ class Task:
     self.queue = []
     self.core.log.add("Loaded task: [" + self.get_task_name() + "].", 5)
     self.execute()
+    if self.core.arguments.cleanup:
+      self.cleanup()
 
   def get_task_name(self):
     return self.task_name
+  
+  def execute(self):
+    self.core.log.add('Task execution for task [' + self.get_task_name() + '] called.', 5)
+    self.core.log.add('No actions configured for [' + self.get_task_name() + '].', 4)
+    pass
+
+  def cleanup(self):
+    self.core.log.add('Cleanup for task [' + self.get_task_name() + '] called.', 5)
+    self.core.log.add('No cleanup configured for [' + self.get_task_name() + '].', 4)
+    pass
   
   
 
