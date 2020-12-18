@@ -2,6 +2,7 @@
 config/*.yml
 data/
 cache/
+tasks-enabled/
 
 
 # Source: https://github.com/github/gitignore/blob/master/Python.gitignore

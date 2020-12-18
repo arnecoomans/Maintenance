@@ -198,6 +198,10 @@ class Core:
     parser.add_argument("-arg", "--argument",
                         help="Arguments passed to task",
                         )
+    #   Cleanup
+    parser.add_argument("-c", '--cleanup',
+                        help="Run cleanup after task execution",
+                        action="store_true")
     #   Target Selection
     #   Overrides target defined by configuration module.
     parser.add_argument("--target", 
