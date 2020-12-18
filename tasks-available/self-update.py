@@ -28,4 +28,4 @@ class Task(mte_task_dispatcher.Task):
   # execute function. 
   def execute(self):
     for line in self.core.run_command('git pull', self.get_task_name()):
-      self.core.log.add('Self-update: ' + line, 4)
+      self.core.log.add('[Self-update] ' + line, 4)

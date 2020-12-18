@@ -38,7 +38,7 @@ class Core:
       'name': '[MTE] Maintenance Task Execution',
       'tagline': 'Centralized management of maintenance tasks.',
       'help_url': 'https://github.com/arnecoomans/maintenance',
-      'version': '0.0.0',
+      'version': '0.2.0',
       'author': 'Arne Coomans',
       # Runtime details
       'start_time': time.time(),
