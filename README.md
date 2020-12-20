@@ -33,6 +33,15 @@ Configuration files can be imported from a configuration file using import: "con
 Additional configuration overwrites previously set configuration. --args is processed last, so this can overwrite configuration.
 
 ## Usage
+Use python to execute the application. Supply the --task directive and give a task to be executed.
+### Test if the application is working
+```
+$ python3 maintenance.py --task pass
+```
+### See what the application is doing
+```
+$ python3 maintenance.py --task pass --logging 5
+```
 
 ## Available tasks
 - pass - do nothing. Great for testing.
