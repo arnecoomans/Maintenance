@@ -29,10 +29,13 @@ class TaskDispatcher:
   def inventorize_tasks(self):
     # Check for installed tasks on filesystem
     for filename in os.listdir(self.core.get('base_dir') + 'tasks-enabled/'):
-      # only process 
+      # only process .py files in tasks directory
       if os.path.isfile(self.core.get('base_dir') + 'tasks-enabled/' + filename) and os.path.splitext(filename)[1] == ".py":
         if self.is_marked_as_task(filename):
+          # Store filename without extention as task name
           self.available_tasks.append(os.path.splitext(filename)[0])
+    # If no tasks are available, throw an error. No further action required.
+    # See issue #15
     if len(self.available_tasks) == 0:
       self.core.log.add('No tasks found in tasks-enabled/. Please check documentation in docs/tasks.md to enable tasks.', 1)
     else:
@@ -68,6 +71,15 @@ class TaskDispatcher:
       self.core.log.add("Task [" + task + "] not found. Skipping this task.", 1)
       return False
 
+# Task class parent
+#
+# This parent class of all tasks contains the basic functionality and functions to 
+# operate if nothing is declared in the task.
+# Basic functions
+# __init__: prepares the task information.
+# execute: is called in __init__ and holds the tasks execution.
+# cleanup: if the tasks can clean up after itself by removing old content, it should
+#          be configured here. Is called when the --cleanup argument is used.
 class Task:
   def __init__(self, core, task_name):
     self.core = core
