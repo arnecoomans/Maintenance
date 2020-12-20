@@ -6,8 +6,24 @@
 ## About
 
 ## Installation
-* Get application from git, use git clone
-* Use example configuration file as template for configuration: copy config/maintenance.example into config/maintenance.yml
+### Download application
+The best way to get the application to your environment is to clone it from Github. This will allow the appication to receive updates in the form of more safe or efficiënt code, new features or new tasks.
+````
+$ git clone https://github.com/arnecoomans/maintenance . 
+```
+
+### Create configuration file
+The application comes with an example configuration file. Use this as a basis for your personalized configuration. Read more about configuration options and customisability as soon as that documentation is written.
+```
+$ cp config/maintenance.example config/maintenance.yml
+```
+
+### Create symlink to tasks you want available.
+By default, no tasks are enabled. In order to enable tasks, you need to place the tasks into the tasks-enable/ directory. The easiest way is to create symlinks, that also ensure updates are pushed.
+```
+$ cd tasks-enabled/
+$ ln -s ../tasks-available/* .
+```
 
 ## Configuration
 Basic application configuration is stored in config/maintenance.yml. It is possible to create additional configuration files and load these via the commandline argument --config.
