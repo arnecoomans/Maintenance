@@ -27,5 +27,14 @@ class Task(mte_task_dispatcher.Task):
   # Everything that needs to be executed should be called from the
   # execute function. 
   def execute(self):
+    self.core.log.add('[' + self.get_task_name() + '] Getting updates from git.', 5)
     for line in self.core.run_command('git pull', self.get_task_name()):
-      self.core.log.add('[Self-update] ' + line, 4)
+      self.core.log.add('[' + self.get_task_name() + '] ' + line, 4)
+  
+  def cleanup(self):
+    self.core.log.add('[' + self.get_task_name() + '] Running cleanup', 5)
+    # Clear cache/
+    for line in self.core.run_command('rm -rf cache/*', self.get_task_name()):
+      if len(line) > 0:
+        self.core.log.add('[' + self.get_task_name() + ']' + line, 4)
+
