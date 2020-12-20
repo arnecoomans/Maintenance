@@ -84,7 +84,7 @@ class Core:
     return self.storage['tagline']
   def calculate_script_duration(self):
     return time.time() - self.storage['start_time']
-  def get_script_duration(self):
+  def get_runtime_duration(self):
     # Uses the start time defined in core.__init__ and current time to calculate running time.
     # Rounds output to 4 digits behind comma.
     return str(round(self.calculate_script_duration(), 4)) + " seconds"

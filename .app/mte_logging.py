@@ -25,7 +25,9 @@ class Logger:
     self.display_width = 79
 
   def __del__(self):
+    self.add_goodbye()
     self.display_log()
+    
   # Setting display level
   # Display level can be set in a range between 0 and 5. 
   # Allow display level to be set during processing. 
@@ -55,18 +57,22 @@ class Logger:
                           'importance': importance, 
                           'time': datetime.datetime.now()
                          } )
-  def content(self, data='', importance=0):
-    self.storage.append( {'data': data, 
-                          'importance': importance, 
-                          'time': datetime.datetime.now()
-                         } )
+  #def content(self, data='', importance=0):
+  #  self.storage.append( {'data': data, 
+  #                        'importance': importance, 
+  #                        'time': datetime.datetime.now()
+  #                       } )
 
   def add_welcome(self):
     self.add('User ' + self.core.storage['runtime_user'] + ' is starting ' + self.core.storage['base_dir'] + sys.argv[0] + '.', 5)
     self.add('Runtime arguments supplied: ' + " ".join(sys.argv[1:]), 5)
     self.add(str(self.core), 5)
     self.add('',5)
-
+  
+  def add_goodbye(self):
+    if self.core.config.get('show_runtime_duration'):
+      self.add('Executing script took ' + self.core.get_runtime_duration() + '.', 4)
+    self.add('Done', 5)  
 
   # Log displaying
   def get_usable_loglines(self):
