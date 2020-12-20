@@ -3,18 +3,26 @@ maintenance:
   backup_target: "/backup/"
   #target_subdirectory: "/"
   gzip_target: True
-  date_format_filename: "%Y%m%d"
+  date_time_format: "%Y%m%d"
   can_use_sudo: True
   show_runtime_duration: True
+  contact:
+    name: "your name here"
+    email: "add_your_email@domain.ext"
   task:
-    pass:
-      message: ''
     backup_mysql:
       target_subdirectory: "mysql/"
       ignored_databases: "information_schema, mysql, performance_schema, sys"
       run_as_root: True
-      date_time_format: "%Y%m%d%-H" #"%Y%m%d%-H%M%S"
+      date_time_format: "%Y%m%d-%H" #"%Y%m%d-%H%M%S"
     backup_config:
+      sources: "/etc/nginx/sites-available/,
+                /etc/ngnix/global/,
+                /etc/nginx/snippets/,
+                /etc/php/7.4/fpm/[r],
+                /development/maintenance/[r]"
       target_subdirectory: "config/"
       keep_incremental: True
+      status_storage: "sqlite" # currently the only supported one
+      hash_type: 'SHA1' # MD5 and SHA1 supported
   #import: "config/development.yml"
