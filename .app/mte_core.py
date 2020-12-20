@@ -49,6 +49,9 @@ class Core:
       'runtime_group_id': str(os.getgid()),
       'has_root_privilage': self.has_root_privilage(),
       # Self-check
+      # The following directories might not be present at runtime,
+      # but might be expected sooner or later. 
+      # All these directories are treated relative to 'base_dir'
       'required_directories': ['cache/', 'data/', 'docs/', 'tasks-available/', 'tasks-enabled']
     }
     # Actual processing
