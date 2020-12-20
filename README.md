@@ -8,7 +8,7 @@
 ## Installation
 ### Download application
 The best way to get the application to your environment is to clone it from Github. This will allow the appication to receive updates in the form of more safe or efficiënt code, new features or new tasks.
-````
+```
 $ git clone https://github.com/arnecoomans/maintenance . 
 ```
 
