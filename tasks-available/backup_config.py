@@ -132,11 +132,10 @@ class Task(mte_task_dispatcher.Task):
     return destination + target_file['filename']
 
   # Source parsing
-  def parse_source(self, source):
+  def parse_source(self, source, recursive=False):
     # Check if recursive sourcing should be applied.
     # lines ending with "[r]" are marked as recursive, and should be 
     # processed one more level deep.
-    recursive = False
     if source[-3:] == '[r]':
       recursive = True
       source = source[:-3]
@@ -150,12 +149,13 @@ class Task(mte_task_dispatcher.Task):
       if source[-1:] != '/':
         source += '/'
       for file in os.listdir(source):
-        if os.path.isfile(source + file):
-          self.parse_source(source + file)
-        elif os.path.isdir(source + file):
-          if recursive:
-            self.parse_source(source + file)
-      
+        if not self.ignored_file(file):
+          if os.path.isfile(source + file):
+            self.parse_source(source + file, recursive)
+          elif os.path.isdir(source + file):
+            if recursive:
+              self.parse_source(source + file, recursive)
+        
 
   # Compare file hash with stored hash
   def compare_file_hash(self, file):
@@ -175,7 +175,13 @@ class Task(mte_task_dispatcher.Task):
       backup_location = self.create_backup(file)
       self.store_hash(file, current_hash, backup_location)
 
-
+  def ignored_file(self, file):
+    ignored = []
+    for item in self.core.config.get('ignored', self.get_task_name()).split(','):
+      ignored.append(item.strip())
+    if file in ignored:
+      return True
+    return False
 
 
 
