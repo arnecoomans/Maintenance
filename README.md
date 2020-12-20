@@ -44,8 +44,11 @@ $ python3 maintenance.py --task pass --logging 5
 ```
 
 ## Available tasks
+### System tasks
 - pass - do nothing. Great for testing.
-- show_config - show config as is applied in the application.
-- backup_config - create backup of file if content differs from last known backup.
-- backup_mysql - create mysql dump of specified databases.
-- 
+- show-config - show config as is applied in the application.
+- self-update
+### Maintenance tasks
+- backup-config - create backup of file if content differs from last known backup.
+- backup-mysql - create mysql dump of specified databases.
+
