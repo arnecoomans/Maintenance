@@ -29,10 +29,10 @@ class TaskDispatcher:
   def inventorize_tasks(self):
     # Check for installed tasks on filesystem
     for filename in os.listdir(self.core.get('base_dir') + 'tasks-enabled/'):
-      if os.path.splitext(filename)[1] == ".py":
+      # only process 
+      if os.path.isfile(self.core.get('base_dir') + 'tasks-enabled/' + filename) and os.path.splitext(filename)[1] == ".py":
         if self.is_marked_as_task(filename):
           self.available_tasks.append(os.path.splitext(filename)[0])
-    
     if len(self.available_tasks) == 0:
       self.core.log.add('No tasks found in tasks-enabled/. Please check documentation in docs/tasks.md to enable tasks.', 1)
     else:
