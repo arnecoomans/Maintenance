@@ -25,6 +25,15 @@ $ cd tasks-enabled/
 $ ln -s ../tasks-available/* .
 ```
 
+### Optional: make application executable
+If you want to run ./maintenance.py instead of python3 maintenance.py, you can choose to make the file executable.
+```
+chmod +x maintenance.py
+```
+
+In the following instructions, whenever it mentions python3 maintenance.py you can type ./maintenance.py.
+
+
 ## Configuration
 Basic application configuration is stored in config/maintenance.yml. It is possible to create additional configuration files and load these via the commandline argument --config.
 
