@@ -99,6 +99,8 @@ class Task(mte_task_dispatcher.Task):
       base = str(base)
     if source[0:len(base)] == base:
       source = [base, source[len(base):]]
+    else:
+      source = ['', source]
     #self.core.log.add('Base ' + str(len(base)))
     #self.core.log.add('Filename ' + source[0] + '--->' + source[1])
     target  = self.core.config.get('backup_target', self.get_task_name())
