@@ -20,6 +20,14 @@ class Filesystem:
   def __init__(self, core):
     self.core = core
 
+
+  # Create Directory
+  # @requires: target (pathlib.PosixPath object or string)
+  # @optional: task
+  # Creates the requested directory. If parent does not exist, parent is
+  # created before proceeding. If sudo can be used to create directory,
+  # the highest to-be-created directory is created using sudo and 
+  # ownership is set to the runtime user and group.
   def create_directory(self, target, task=''):
     # Expect target to be pathlib.PosixPath object.
     # If it is not, create it.
@@ -29,20 +37,24 @@ class Filesystem:
     # 
     # Check if directory exists
     if target.exists():
-      # Directory already exists, but can I write to it?
+      # Directory already exists
       if os.access(target, os.W_OK):
+        # Directory is writable for current user.
         return True
       else:
+        # Directory is not writable for current user.
+        # Do not make changes to existing directories, this is a fatal error.
         self.core.log.add('Directory [' + str(target.absolute()) + '] already exists, but write access is denied. Please resolve.', 1)
         self.core.panic()
+    # Directory does not yet exist
     else:
       # Check if parent exists
       if not  target.parent.exists():
         # Parent directory does not exist, create it before proceeding
         self.create_directory(target.parent, task)
       # Parent now exists.
-      # Can I write in parent directory?
-      # If yes, i can create the directory
+      # Can runtime user write in parent directory?
+      # If yes, runtime user can create the directory
       if os.access(target.parent, os.W_OK):
         # Yes
         self.core.log.add('Creating directory [' + str(target.absolute()) + '].', 4)
@@ -50,6 +62,8 @@ class Filesystem:
         create_process = os.popen(command)
         response = create_process.read().strip().split("\n")
         return True
+      # If parent directory is not writable for runtime user, 
+      # try to create the directory using sudo.
       else:
         if self.core.use_sudo(task):
           # Create directory using Sudo
@@ -65,6 +79,7 @@ class Filesystem:
         else:
           self.core.log.add('Insufficient user rights to create directory [' + str(target.absolute()) + '].', 1)
           self.core.panic()
+    # Done.
 
   def create_backup(self, source_path, target_path, task='core'):
     self.core.log.add('Creating backup of [' + source_path + '] to [' + target_path + '].', 5)
