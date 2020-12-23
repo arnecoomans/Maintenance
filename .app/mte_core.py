@@ -25,6 +25,7 @@ from datetime import datetime
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import mte_logging as mte_logging
 import mte_config as mte_config
+import mte_fs as mte_fs
 import mte_task_dispatcher as mte_task_dispatcher
 
 
@@ -62,6 +63,9 @@ class Core:
     self.log.set_display_level(self.config.get('logging'))
     #   Parse command line arguments
     self.arguments = self.process_parsed_arguments( self.get_parsed_arguments() )
+    #   Load Filesystem functions
+    self.fs = mte_fs.Filesystem(self)
+    self.fs.create_directory('/development/maintenance/test')
     #   Check if at least some configuration is loaded
     #
     # Self-care
@@ -103,13 +107,22 @@ class Core:
     else:
       return False
 
-  def get_sudo(self, task=None):
+  def get_sudo(self, task=''):
     if (self.config.get('can_use_sudo', task) and 
         self.config.get('run_as_root', task)
         and not self.has_root_privilage()):
       return "sudo "
     return ""
   
+  def use_sudo(self, task=''):
+    if self.has_root_privilage():
+      return False
+    elif self.config.get('can_use_sudo', task):
+      return True
+  
+  def panic(self):
+    # Clear log.
+    os.exit()
 
   def get_verified_directory(self, directory, task):
     if directory[-1:] == '/':
