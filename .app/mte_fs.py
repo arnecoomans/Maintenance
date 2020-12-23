@@ -13,7 +13,7 @@
 # Import system modules
 import os
 import sys
-import pathlib
+import pathlib # https://docs.python.org/3/library/pathlib.html
 
 
 class Filesystem:
@@ -126,7 +126,7 @@ class Filesystem:
       # Execute the command
       backup_process = os.popen(command)
       response = backup_process.read().strip().split("\n")
-      #self.core.log.add(command)
+      #self.core.log.add(command, 1)
       self.core.log.add('Create Backup: [' + str(source.absolute()) + '] to [' + str(target.absolute()) + '].', 5)
       return True
     else:
@@ -137,6 +137,8 @@ class Filesystem:
     # Ensure were working with Pathlib object
     if type(target) is not pathlib.PosixPath:
       target = pathlib.Path(target)
+    # Prepend location to target with path as prefix
+    #target = target.with_name(str(target.parent).replace('/', '_') + '_' + target.name)
     # If required add datetime to filename
     if self.core.use_datetime(task):
       target = target.with_name(target.stem + '-' + self.core.get_date_time(task) + target.suffix)
