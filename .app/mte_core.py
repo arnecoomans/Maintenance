@@ -65,7 +65,8 @@ class Core:
     self.arguments = self.process_parsed_arguments( self.get_parsed_arguments() )
     #   Load Filesystem functions
     self.fs = mte_fs.Filesystem(self)
-    self.fs.create_directory('/development/maintenance/test')
+    #self.fs.create_directory('/development/maintenance/test')
+    #self.fs.create_backup('/development/maintenance/target.md', '/development/maintenance/backup/test.md')
     #   Check if at least some configuration is loaded
     #
     # Self-care
@@ -182,11 +183,19 @@ class Core:
     return self.get_verified_directory(target + subdirectory, task)
   
   def get_gzip(self, task):
-    if self.config.get('gzip_target', task):
+    return self.use_gzip(task)
+
+  def use_gzip(self, task):
+    if self.config.get('target_use_gzip', task):
       return True
     else:
       return False
-    
+  def use_datetime(self, task):
+    if self.config.get('target_use_datetime', task):
+      return True
+    else:
+      return False
+
   def get_date_time(self, task):
     return datetime.now().strftime(self.config.get('date_time_format', task))
 

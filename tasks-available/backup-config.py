@@ -75,7 +75,7 @@ class Task(mte_task_dispatcher.Task):
     filename, file_extension = os.path.splitext(os.path.basename(file))
     date = self.core.get_date_time(self.get_task_name())
     gzip = ''
-    if self.core.get_gzip(self.get_task_name()):
+    if self.core.use_gzip(self.get_task_name()):
       gzip = '.tar.gz'
     return {'directory': directory, 'filename': filename + '_' + date + file_extension + gzip}
 

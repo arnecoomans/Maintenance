@@ -77,9 +77,71 @@ class Filesystem:
           response = create_process.read().strip().split("\n")
           return True
         else:
-          self.core.log.add('Insufficient user rights to create directory [' + str(target.absolute()) + '].', 1)
+          self.core.log.add('Create Directory: Insufficient user rights to create directory [' + str(target.absolute()) + '].', 1)
           self.core.panic()
     # Done.
 
-  def create_backup(self, source_path, target_path, task='core'):
-    self.core.log.add('Creating backup of [' + source_path + '] to [' + target_path + '].', 5)
+  def create_backup(self, source, target, task=''):
+    if type(source) is not pathlib.PosixPath:
+      source = pathlib.Path(source)
+    if type(target) is not pathlib.PosixPath:
+      target = pathlib.Path(target)
+    # Process Source
+    # If Source is a directory, do not process.
+    if os.path.isdir(source):
+      self.core.log.add('Create Backup: [' + str(source.absolute()) + '] is a directory. Skipping.', 2)
+    # If Source does not exist, throw a warning
+    elif not os.path.isfile(source):
+      self.core.log.add('Create Backup: [' + str(source.absolute()) + '] does not exist. Skipping.', 2)
+    # If no reasons are found not to process the file, process it.
+    #
+    # Process target
+    # If target is a directory, append source filename to target
+    if target.name == target.stem:
+      # Assume a directory is passed
+      self.create_directory(target)
+      target = target / source.name
+    else:
+      # Assume a file is passed
+      self.create_directory(target.parent)
+    # Does target exist?
+    if os.access(target.parent, os.W_OK):
+      # Backup location exists and is writable
+      # Is source readable?
+      command = ''
+      if not os.access(source, os.R_OK):
+        if self.core.use_sudo(task):
+          command += 'sudo '
+        else:
+          self.core.log.add('Create Backup: Insufficient user rights on source file to create backup of [' + str(source.absolute()) + '].', 1)
+          return False
+          #self.core.panic() # I think one file should not be blocking, should it?
+      # Verify target filename
+      target = self.get_target_path_and_filename(target, task)
+      # Continue bulding command
+      command += 'cat ' + str(source.absolute())
+      if self.core.use_gzip(task):
+        command += ' | gzip '
+      command += ' >> ' + str(target.absolute())
+      # Execute the command
+      backup_process = os.popen(command)
+      response = backup_process.read().strip().split("\n")
+      #self.core.log.add(command)
+      self.core.log.add('Create Backup: [' + str(source.absolute()) + '] to [' + str(target.absolute()) + '].', 5)
+      return True
+    else:
+      # This should not happen, should be covered by create_directory
+      return False
+  
+  def get_target_path_and_filename(self, target, task=''):
+    # Ensure were working with Pathlib object
+    if type(target) is not pathlib.PosixPath:
+      target = pathlib.Path(target)
+    # If required add datetime to filename
+    if self.core.use_datetime(task):
+      target = target.with_name(target.stem + '-' + self.core.get_date_time(task) + target.suffix)
+    # If required, add .tar.gz to filename
+    if self.core.use_gzip(task):
+      target = target.with_suffix(target.suffix + '.tar.gz' )
+    # return path and filename
+    return target
