@@ -21,6 +21,8 @@ from datetime import datetime
 import sqlite3
 
 import hashlib
+import pathlib
+
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__) + "../.app/"))
 
@@ -33,7 +35,8 @@ class Task(mte_task_dispatcher.Task):
     self.dbtable = 'files'
     # List backup sources
     self.sources = []
-    for item in core.config.get('sources', task_name).split(","):
+    self.hashes = {}
+    for item in core.config.get('backup_sources', task_name).split(","):
       self.sources.append(item.strip())
     self.queries = {
       'create_table': 'CREATE TABLE ' + self.dbtable + ' (file text, hash text, date timestamp, backup_location text)',
@@ -44,150 +47,145 @@ class Task(mte_task_dispatcher.Task):
     # Run template task initiator
     super().__init__(core, task_name) 
 
-    
-
-  
-  def __del__(self):
-    #self.close_connection()
-    pass
-
-
-  # Everything that needs to be executed should be called from the
-  # execute function. 
   def execute(self):
     for source in self.sources:
       self.core.log.add('Processing [' + source + '].', 4)
-      self.parse_source(source)
-      #self.process_source(source)
-  
+      self.process(source)
 
-  # Data Getters
-  # Get date format
-  def get_date_format(self):
-    if self.core.config.get('date_time_format', self.get_task_name()):
-      return self.core.config.get('date_time_format', self.get_task_name())
+
+
+
+  # Process backup locations
+  def process(self, source, recursive=False, base=None):
+    # Check type of input
+    if type(source) is not pathlib.PosixPath:
+      source = pathlib.Path(source)
+    # Process Recursive Marker
+    if source.stem == '[r]':
+      recursive = True
+      source = source.parent  
+    # Check if source is a file
+    if source.is_file():
+      # Core backup process handles the usage of sudo when the
+      # source is not accessible for the current user.
+      self.create_backup(source, base)
+    elif source.is_dir():
+      # Process base
+      if base is None:
+        base = source
+      for child in source.iterdir():
+        if child.is_dir():
+          if not self.is_ignored(child):
+            self.process(child, recursive, base)
+        elif child.is_file():
+          self.create_backup(child, base)
+
+  def create_backup(self, source, base):
+    # Check type of input
+    if type(source) is not pathlib.PosixPath:
+      source = pathlib.Path(source)
+    # Check if file is not ignored
+    if not self.is_ignored(source):
+      # Check if file hash is not known
+      if not self.hashes_match(source):
+        target = self.get_target_filename(source, base)
+        self.core.fs.create_backup(source, target, self.get_task_name()) 
+        self.store_hash(source, self.get_file_hash(source), target)
+  
+  def hashes_match(self, source):
+    # Check type of input
+    if type(source) is not pathlib.PosixPath:
+      source = pathlib.Path(source)
+    source_hash = self.get_file_hash(source)
+    stored_hash = self.get_stored_hash(source)
+    if stored_hash is not None and source_hash == stored_hash[1]:
+      self.core.log.add('[' + str(source) + '] last change: [' + stored_hash[2] + '].', 5)
+      return True
     else:
-      return ''
-  
-  def get_backup_filename(self, file):
-    directory = os.path.dirname(file)
-    directory = directory.replace('/', '_')
-    filename, file_extension = os.path.splitext(os.path.basename(file))
-    date = self.core.get_date_time(self.get_task_name())
-    gzip = ''
-    if self.core.use_gzip(self.get_task_name()):
-      gzip = '.tar.gz'
-    return {'directory': directory, 'filename': filename + '_' + date + file_extension + gzip}
+      return False
+    
 
+
+
+      
+
+  def is_ignored(self, file):
+    ignored = []
+    for item in self.core.config.get('ignored', self.get_task_name()).split(','):
+      ignored.append(item.strip())
+    if file.name in ignored:
+      return True
+    return False
+
+
+  def get_target_filename(self, source, base):
+    source = str(source)
+    if base is None:
+      base = ''
+    elif type(base) is pathlib.PosixPath:
+      base = str(base)
+    if source[0:len(base)] == base:
+      source = [base, source[len(base):]]
+    else:
+      source = ['', source]
+    target  = self.core.config.get('backup_target', self.get_task_name())
+    if target[:-1] != '/':
+      target += '/'
+    target += self.core.config.get('target_subdirectory', self.get_task_name())
+    if target[:-1] != '/':
+      target += '/'
+    target += source[0].replace('/', '_') + '/' + source[1].replace('/', '_')
+    #self.core.log.add('T: ' + target)
+    return target
+  
+
+  # HASHING
   # Get Hash Type
   def get_hash_type(self):
     if self.core.config.get('hash_type', self.get_task_name()):
       return self.core.config.get('hash_type', self.get_task_name())
     else:
       return ''
-  
-  # Hashing
+  # Get file hash
   def get_file_hash(self, file):
-    # Source: https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
-    # BUF_SIZE is totally arbitrary, change for your app!
-    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-    md5 = hashlib.md5()
-    sha1 = hashlib.sha1()
-    with open(file, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            md5.update(data)
-            sha1.update(data)
-    if self.get_hash_type().lower() == 'md5':
-      return md5.hexdigest()
-    elif self.get_hash_type().lower() == 'sha1':
-      return sha1.hexdigest()
+    if file in self.hashes:
+      return self.hashes[file]
     else:
-      self.core.log.add('Quitting: Unsupported hash_type configured for ' + self.get_task_name() + '. Please see documentation for supported hash types.', 1)
-      sys.exit()
-  
-  # Stored hash
+      # Source: https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
+      # BUF_SIZE is totally arbitrary, change for your app!
+      BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+      md5 = hashlib.md5()
+      sha1 = hashlib.sha1()
+      with open(file, 'rb') as f:
+          while True:
+              data = f.read(BUF_SIZE)
+              if not data:
+                  break
+              md5.update(data)
+              sha1.update(data)
+      if self.get_hash_type().lower() == 'md5':
+        self.hashes[file] = md5.hexdigest()
+        return self.hashes[file]
+      elif self.get_hash_type().lower() == 'sha1':
+        self.hashes[file] = sha1.hexdigest()
+        return self.hashes[file]
+      else:
+        self.core.log.add('Quitting: Unsupported hash_type configured for ' + self.get_task_name() + '. Please see documentation for supported hash types.', 1)
+        self.core.panic()
+  # Get stored hash from persistent data storage
   def get_stored_hash(self, file):
     if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
-      self.get_cursor().execute(self.queries['select_file'], (file,))
+      self.get_cursor().execute(self.queries['select_file'], (str(file),))
       return self.get_cursor().fetchone()
-
+  # Store hash in persistent data storage
   def store_hash(self, file, hash, location=''):
     if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
-      self.get_cursor().execute(self.queries['insert_file'], (file, hash, datetime.now(), location))
+      self.get_cursor().execute(self.queries['insert_file'], (str(file), hash, datetime.now(), location))
       self.get_db_connection().commit()
-  
-  # Creating backups
-  def create_backup(self, file):
-    gzip = ''
-    target_file = self.get_backup_filename(file)
-    destination = self.core.get_verified_directory(self.core.get_target(self.get_task_name()) + target_file['directory'], self.get_task_name())
-    if self.core.get_gzip(self.get_task_name()):
-      gzip = '| gzip '
-
-    #self.core.log.add('Creating physical backup of [' + file + ']. in [' + destination + '].', 5)
-    self.core.run_command('cat ' + file + gzip + ' > ' + destination + target_file['filename'], self.get_task_name())
-    return destination + target_file['filename']
-
-  # Source parsing
-  def parse_source(self, source, recursive=False):
-    # Check if recursive sourcing should be applied.
-    # lines ending with "[r]" are marked as recursive, and should be 
-    # processed one more level deep.
-    if source[-3:] == '[r]':
-      recursive = True
-      source = source[:-3]
-    # At this time, recursive is either set to True or False
-    # Check if a file is supplied
-    if os.path.isfile(source):
-      self.compare_file_hash(source)
-    elif os.path.isdir(source):
-      # Loop through directory, process files
-      # Only process directories if recursive is set to true
-      if source[-1:] != '/':
-        source += '/'
-      for file in os.listdir(source):
-        if not self.ignored_file(file):
-          if os.path.isfile(source + file):
-            self.parse_source(source + file, recursive)
-          elif os.path.isdir(source + file):
-            if recursive:
-              self.parse_source(source + file, recursive)
-        
-
-  # Compare file hash with stored hash
-  def compare_file_hash(self, file):
-    # Get current hash
-    current_hash = self.get_file_hash(file)
-    # get stored_hash
-    stored_hash = self.get_stored_hash(file)
-    if stored_hash is None:
-      self.core.log.add('New file [' + file + ']. Processing.', 4)
-      backup_location = self.create_backup(file)
-      self.store_hash(file, current_hash, backup_location)
-    elif current_hash == stored_hash[1]:
-      #self.core.log.add('No change detected in [' + file + '].')
-      pass
-    else:
-      self.core.log.add('Change detected in [' + file + ' ]. Processing.', 4)
-      backup_location = self.create_backup(file)
-      self.store_hash(file, current_hash, backup_location)
-
-  def ignored_file(self, file):
-    ignored = []
-    for item in self.core.config.get('ignored', self.get_task_name()).split(','):
-      ignored.append(item.strip())
-    if file in ignored:
-      return True
-    return False
 
 
 
-
-
-# DATABASE FUNCTIONS
+  # DATABASING
   def get_db_connection(self):
     if not self.db:
       if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
@@ -215,18 +213,3 @@ class Task(mte_task_dispatcher.Task):
       self.get_db_connection.close()
   
   
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-

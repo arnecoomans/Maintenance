@@ -3,26 +3,37 @@ maintenance:
   backup_target: "/backup/"
   #target_subdirectory: "/"
   gzip_target: True
+  target_use_gzip: True
+  target_use_datetime: True
   date_time_format: "%Y%m%d"
-  can_use_sudo: True
+  can_use_sudo: FaTruelse
   show_runtime_duration: True
   contact:
-    name: "your name here"
-    email: "add_your_email@domain.ext"
+    name: "Arne Coomans"
+    email: "script+maintenance@arnecoomans.nl"
   task:
-    backup_mysql:
+    self-update:
+      always_cleanup: True
+    backup-mysql:
       target_subdirectory: "mysql/"
       ignored_databases: "information_schema, mysql, performance_schema, sys"
       run_as_root: True
       date_time_format: "%Y%m%d-%H" #"%Y%m%d-%H%M%S"
-    backup_config:
-      sources: "/etc/nginx/sites-available/,
-                /etc/ngnix/global/,
-                /etc/nginx/snippets/,
-                /etc/php/7.4/fpm/[r],
-                /development/maintenance/[r]"
+    backup-config:
+      backup_sources: "/etc/nginx/sites-available/,
+                       /etc/ngnix/global/,
+                       /etc/nginx/snippets/,
+                       /etc/php/7.4/fpm/,
+                       /etc/php/7.4/fpm/pool.d/,
+                       /etc/php/7.4/fpm/pool.d,
+                       /data/scripts/[r],
+                       /development/maintenance/[r].py"
+      ignored: ".git,
+               __pycache__,
+               test.md,
+               tasks-enabled"
       target_subdirectory: "config/"
       keep_incremental: True
       status_storage: "sqlite" # currently the only supported one
       hash_type: 'SHA1' # MD5 and SHA1 supported
-  #import: "config/development.yml"
+  #import: "config/example.yml"
