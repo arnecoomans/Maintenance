@@ -127,7 +127,7 @@ class Filesystem:
       backup_process = os.popen(command)
       response = backup_process.read().strip().split("\n")
       #self.core.log.add(command, 1)
-      self.core.log.add('Create Backup: [' + str(source.absolute()) + '] to [' + str(target.absolute()) + '].', 5)
+      self.core.log.add('Backup: [' + str(source.absolute()) + '] --> [' + str(target.absolute()) + '].', 4)
       return True
     else:
       # This should not happen, should be covered by create_directory

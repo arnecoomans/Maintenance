@@ -123,7 +123,7 @@ class Core:
   
   def panic(self):
     # Clear log.
-    os.exit()
+    sys.exit()
 
   def get_verified_directory(self, directory, task):
     if directory[-1:] == '/':

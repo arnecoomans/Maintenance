@@ -35,6 +35,7 @@ class Task(mte_task_dispatcher.Task):
     self.dbtable = 'files'
     # List backup sources
     self.sources = []
+    self.hashes = {}
     for item in core.config.get('backup_sources', task_name).split(","):
       self.sources.append(item.strip())
     self.queries = {
@@ -67,8 +68,7 @@ class Task(mte_task_dispatcher.Task):
     if source.is_file():
       # Core backup process handles the usage of sudo when the
       # source is not accessible for the current user.
-      target = self.get_target_filename(source, base)
-      self.core.fs.create_backup(source, target, self.get_task_name())
+      self.create_backup(source, base)
     elif source.is_dir():
       # Process base
       if base is None:
@@ -78,9 +78,36 @@ class Task(mte_task_dispatcher.Task):
           if not self.is_ignored(child):
             self.process(child, recursive, base)
         elif child.is_file():
-          if not self.is_ignored(child):
-            target = self.get_target_filename(child, base)
-            self.core.fs.create_backup(child, target, self.get_task_name())
+          self.create_backup(child, base)
+
+  def create_backup(self, source, base):
+    # Check type of input
+    if type(source) is not pathlib.PosixPath:
+      source = pathlib.Path(source)
+    # Check if file is not ignored
+    if not self.is_ignored(source):
+      # Check if file hash is not known
+      if not self.hashes_match(source):
+        target = self.get_target_filename(source, base)
+        self.core.fs.create_backup(source, target, self.get_task_name()) 
+        self.store_hash(source, self.get_file_hash(source), target)
+  
+  def hashes_match(self, source):
+    # Check type of input
+    if type(source) is not pathlib.PosixPath:
+      source = pathlib.Path(source)
+    source_hash = self.get_file_hash(source)
+    stored_hash = self.get_stored_hash(source)
+    if stored_hash is not None and source_hash == stored_hash[1]:
+      self.core.log.add('[' + str(source) + '] last change: [' + stored_hash[2] + '].', 5)
+      return True
+    else:
+      return False
+    
+
+
+
+      
 
   def is_ignored(self, file):
     ignored = []
@@ -101,8 +128,6 @@ class Task(mte_task_dispatcher.Task):
       source = [base, source[len(base):]]
     else:
       source = ['', source]
-    #self.core.log.add('Base ' + str(len(base)))
-    #self.core.log.add('Filename ' + source[0] + '--->' + source[1])
     target  = self.core.config.get('backup_target', self.get_task_name())
     if target[:-1] != '/':
       target += '/'
@@ -123,34 +148,39 @@ class Task(mte_task_dispatcher.Task):
       return ''
   # Get file hash
   def get_file_hash(self, file):
-    # Source: https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
-    # BUF_SIZE is totally arbitrary, change for your app!
-    BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
-    md5 = hashlib.md5()
-    sha1 = hashlib.sha1()
-    with open(file, 'rb') as f:
-        while True:
-            data = f.read(BUF_SIZE)
-            if not data:
-                break
-            md5.update(data)
-            sha1.update(data)
-    if self.get_hash_type().lower() == 'md5':
-      return md5.hexdigest()
-    elif self.get_hash_type().lower() == 'sha1':
-      return sha1.hexdigest()
+    if file in self.hashes:
+      return self.hashes[file]
     else:
-      self.core.log.add('Quitting: Unsupported hash_type configured for ' + self.get_task_name() + '. Please see documentation for supported hash types.', 1)
-      sys.exit()
+      # Source: https://stackoverflow.com/questions/22058048/hashing-a-file-in-python
+      # BUF_SIZE is totally arbitrary, change for your app!
+      BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
+      md5 = hashlib.md5()
+      sha1 = hashlib.sha1()
+      with open(file, 'rb') as f:
+          while True:
+              data = f.read(BUF_SIZE)
+              if not data:
+                  break
+              md5.update(data)
+              sha1.update(data)
+      if self.get_hash_type().lower() == 'md5':
+        self.hashes[file] = md5.hexdigest()
+        return self.hashes[file]
+      elif self.get_hash_type().lower() == 'sha1':
+        self.hashes[file] = sha1.hexdigest()
+        return self.hashes[file]
+      else:
+        self.core.log.add('Quitting: Unsupported hash_type configured for ' + self.get_task_name() + '. Please see documentation for supported hash types.', 1)
+        self.core.panic()
   # Get stored hash from persistent data storage
   def get_stored_hash(self, file):
     if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
-      self.get_cursor().execute(self.queries['select_file'], (file,))
+      self.get_cursor().execute(self.queries['select_file'], (str(file),))
       return self.get_cursor().fetchone()
   # Store hash in persistent data storage
   def store_hash(self, file, hash, location=''):
     if self.core.config.get('status_storage', self.get_task_name()) == 'sqlite':
-      self.get_cursor().execute(self.queries['insert_file'], (file, hash, datetime.now(), location))
+      self.get_cursor().execute(self.queries['insert_file'], (str(file), hash, datetime.now(), location))
       self.get_db_connection().commit()
 
 
@@ -181,3 +211,5 @@ class Task(mte_task_dispatcher.Task):
     if self.db:
       self.get_db_connection().commit()
       self.get_db_connection.close()
+  
+  
