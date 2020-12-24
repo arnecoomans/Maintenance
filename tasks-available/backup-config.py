@@ -65,7 +65,7 @@ class Task(mte_task_dispatcher.Task):
       recursive = True
       source = source.parent
     # Check if source location can be read
-    if not os.access(source, R_OK):
+    if not os.access(source, os.R_OK):
       self.core.log.add('No read access in [' + str(source.parent) + ']. Please run script as root.', 1)
       self.core.panic()
     # Check if source is a file
