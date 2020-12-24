@@ -63,13 +63,9 @@ class Task(mte_task_dispatcher.Task):
     # Process Recursive Marker
     if source.stem == '[r]':
       recursive = True
-      source = source.parent  
-    # Check if source is a file
-    if source.is_file():
-      # Core backup process handles the usage of sudo when the
-      # source is not accessible for the current user.
-      self.create_backup(source, base)
-    elif source.is_dir():
+      source = source.parent
+    
+    if source.is_dir():
       # Process base
       if base is None:
         base = source
@@ -79,7 +75,12 @@ class Task(mte_task_dispatcher.Task):
             self.process(child, recursive, base)
         elif child.is_file():
           self.create_backup(child, base)
-
+    # Check if source is a file
+    elif source.is_file():
+      # Core backup process handles the usage of sudo when the
+      # source is not accessible for the current user.
+      self.create_backup(source, base)
+    
   def create_backup(self, source, base):
     # Check type of input
     if type(source) is not pathlib.PosixPath:
