@@ -64,7 +64,15 @@ class Task(mte_task_dispatcher.Task):
     if source.stem == '[r]':
       recursive = True
       source = source.parent
-    
+    # Check if source location can be read
+    if not os.access(source, R_OK):
+      self.core.log.add('No read access in [' + str(source.parent) + ']. Please run script as root.', 1)
+      self.core.panic()
+    # Check if source is a file
+    elif source.is_file():
+      # Core backup process handles the usage of sudo when the
+      # source is not accessible for the current user.
+      self.create_backup(source, base)
     if source.is_dir():
       # Process base
       if base is None:
@@ -75,12 +83,7 @@ class Task(mte_task_dispatcher.Task):
             self.process(child, recursive, base)
         elif child.is_file():
           self.create_backup(child, base)
-    # Check if source is a file
-    elif source.is_file():
-      # Core backup process handles the usage of sudo when the
-      # source is not accessible for the current user.
-      self.create_backup(source, base)
-    
+
   def create_backup(self, source, base):
     # Check type of input
     if type(source) is not pathlib.PosixPath:
