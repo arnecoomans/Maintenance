@@ -61,8 +61,10 @@ class Task(mte_task_dispatcher.Task):
     if type(source) is not pathlib.PosixPath:
       source = pathlib.Path(source)
     # Process Recursive Marker
+    if recursive:
+      self.core.log.add('[r] Processing [' + str(source).replace(str(base), '') + ']', 4)
     if source.stem == '[r]':
-      self.core.log.add('  Recursive marker found. Processing', 5)
+      self.core.log.add(' Recursive marker found. Processing', 5)
       recursive = True
       source = source.parent
     # Check if source location can be read
