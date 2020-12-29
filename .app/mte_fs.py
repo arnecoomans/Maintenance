@@ -211,3 +211,29 @@ class Filesystem:
     self.core.cache['type-' + str(path)] = result
     # Return the set file type
     return(result)
+  
+  def iterdir(self, path, task):
+    if type(path) is not pathlib.PosixPath:
+      path = pathlib.Path(path)
+    # Allow iterdir when the current user has no access to the directory.
+    # Try the basic way first
+    children = []
+    try:
+      for child in path.iterdir():
+        children.append(child)
+    except PermissionError:
+      # When a PermissionError is thrown, it is worth trying again using sudo.
+      # Check if sudo is configured to be used
+      if self.core.use_sudo(task):
+        self.core.log.add('Using sudo to list files in directory.')
+        try:
+          # Get the file type using stat
+          command = 'sudo ls ' + str(path)
+          command = os.popen(command)
+          files = command.read().strip().split("\n")
+          for file in files:
+            children.append(path / file.strip())
+            self.core.log.add(str(path) + file)
+        except PermissionError:
+          pass
+    return children

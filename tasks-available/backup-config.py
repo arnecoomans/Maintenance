@@ -80,8 +80,8 @@ class Task(mte_task_dispatcher.Task):
       # Process base
       if base is None:
         base = source
-      for child in source.iterdir():
-        #if child.is_dir():
+      #for child in source.iterdir():
+      for child in self.core.fs.iterdir(source, self.get_task_name()):
         if self.core.fs.is_dir(child, self.get_task_name()):
           if not self.is_ignored(child):
             self.process(child, recursive, base)
@@ -122,6 +122,8 @@ class Task(mte_task_dispatcher.Task):
 
   def is_ignored(self, file):
     ignored = []
+    if type(file) is not pathlib.PosixPath:
+      file = pathlib.Path(file)
     for item in self.core.config.get('ignored', self.get_task_name()).split(','):
       ignored.append(item.strip())
     if file.name in ignored:
@@ -167,13 +169,31 @@ class Task(mte_task_dispatcher.Task):
       BUF_SIZE = 65536  # lets read stuff in 64kb chunks!
       md5 = hashlib.md5()
       sha1 = hashlib.sha1()
-      with open(file, 'rb') as f:
-          while True:
-              data = f.read(BUF_SIZE)
-              if not data:
-                  break
-              md5.update(data)
-              sha1.update(data)
+      try:
+        with open(file, 'rb') as f:
+            while True:
+                data = f.read(BUF_SIZE)
+                if not data:
+                    break
+                md5.update(data)
+                sha1.update(data)
+      except PermissionError:
+        if self.core.use_sudo(self.get_task_name()):
+          #self.core.log.add('Get hash via commandline with sudo')
+          hash = ''
+          if self.get_hash_type().lower() == 'md5':
+            hash = self.core.run_command('sudo md5sum '  + str(file), self.get_task_name())
+          elif self.get_hash_type().lower() == 'sha1':
+            hash = self.core.run_command('sudo sha1sum '  + str(file), self.get_task_name())
+          if hash != '':
+            hash = hash[0]
+            hash = hash.split(' ')
+            self.hashes[file] = hash[0]
+            return hash[0]
+        else:
+          self.core.log.add('Insufficient rights to calculate ' + self.get_hash_type() + ' hash for [' + str(file) + ']. Consider changing user, allowing sudo or running this script as root.', 2)
+        
+        
       if self.get_hash_type().lower() == 'md5':
         self.hashes[file] = md5.hexdigest()
         return self.hashes[file]
