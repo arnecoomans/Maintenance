@@ -225,7 +225,7 @@ class Filesystem:
       # When a PermissionError is thrown, it is worth trying again using sudo.
       # Check if sudo is configured to be used
       if self.core.use_sudo(task):
-        self.core.log.add('Using sudo to list files in directory.')
+        self.core.log.add('Using sudo to list files in directory [' + str(path) + '].', 5)
         try:
           # Get the file type using stat
           command = 'sudo ls ' + str(path)
@@ -233,7 +233,6 @@ class Filesystem:
           files = command.read().strip().split("\n")
           for file in files:
             children.append(path / file.strip())
-            self.core.log.add(str(path) + file)
         except PermissionError:
           pass
     return children
