@@ -71,14 +71,12 @@ class Task(mte_task_dispatcher.Task):
     #  self.core.panic()
     # Check if source is a file
     #elif source.is_file():
-    self.core.log.add(': ' + str(source))
     if self.core.fs.is_file(source, self.get_task_name()):  
       # Core backup process handles the usage of sudo when the
       # source is not accessible for the current user.
       self.create_backup(source, base)
     #if source.is_dir():
     elif self.core.fs.is_dir(source, self.get_task_name()):
-      self.core.log.add('dir found: ' + str(source))
       # Process base
       if base is None:
         base = source
