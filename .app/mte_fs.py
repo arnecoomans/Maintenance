@@ -147,3 +147,67 @@ class Filesystem:
       target = target.with_suffix(target.suffix + '.tar.gz' )
     # return path and filename
     return target
+
+  
+  def is_file(self, path, task):
+    if self.get_type_of_path(path, task) == 'file':
+      return True
+    #self.core.log.add(self.get_type_of_path(path, task))
+    return False
+
+  def is_dir(self, path, task):
+    if self.get_type_of_path(path, task) == 'dir':
+      return True
+    return False
+
+  def get_type_of_path(self, path, task):
+    # Use os's STAT function to get the type of filesystem reference
+    if type(path) is not pathlib.PosixPath:
+      path = pathlib.Path(path)
+    # Check core's cache for 
+    if str(path) in self.core.cache:
+      return self.core.cache['type-' + str(path)]
+    # Item is not cached, so detect file type
+    result = None
+    try:
+      # Loop through different file options using pathlib
+      # This is required to be able to escalate and try again
+      # using sudo when configured.
+      if path.is_symlink():
+        result = 'symlink'
+      elif path.is_file():
+        result = 'file'
+      elif path.is_dir():
+        result = 'dir'
+      elif path.is_socket():
+        result = 'socket'
+    except PermissionError:
+      # When a PermissionError is thrown, it is worth trying again using sudo.
+      # Check if sudo is configured to be used
+      if self.core.use_sudo(task):
+        #self.core.log.add('Using sudo to determine file type.')
+        try:
+          # Get the file type using stat
+          command = 'sudo stat --format=%F ' + str(path)
+          command = os.popen(command)
+          file_type = command.read().strip()
+          # Loop through the different supported file types
+          if file_type in ['regular file', 'regular empty file']:
+            result = 'file'
+          elif file_type == 'directory':
+            result = 'dir'
+          elif file_type == 'symbolic link':
+            result = 'symlink'
+          elif file_type == 'socket':
+            result = 'socket'
+        except PermissionError:
+          # Should not happen since sudo/root is used
+          pass
+      else:
+        # PermissionError but sudo is not configured to be available. 
+        self.core.log.add('Insufficient rights to determine file type of [' + str(path) + ']. Concider running this script with a different user, use sudo, as root.', 3)
+        # result will be unchanged en remain None
+    # Store outcome in core's cache
+    self.core.cache['type-' + str(path)] = result
+    # Return the set file type
+    return(result)

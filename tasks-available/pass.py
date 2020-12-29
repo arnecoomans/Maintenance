@@ -27,4 +27,8 @@ class Task(mte_task_dispatcher.Task):
   # Everything that needs to be executed should be called from the
   # execute function. 
   def execute(self):
+    # is_file development
+    path = '/development/maintenance'
+    self.core.log.add(path)
+    self.core.log.add(str(self.core.fs.is_dir(path, self.get_task_name())))
     pass

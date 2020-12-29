@@ -34,6 +34,7 @@ class Core:
     # Internal data storage
     self.tasks = []
     self.storage = {}
+    self.cache = {}
     self.storage = {
       # Application details
       'name': '[MTE] Maintenance Task Execution',

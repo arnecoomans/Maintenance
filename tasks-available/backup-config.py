@@ -62,27 +62,36 @@ class Task(mte_task_dispatcher.Task):
       source = pathlib.Path(source)
     # Process Recursive Marker
     if source.stem == '[r]':
+      self.core.log.add('  Recursive marker found. Processing', 5)
       recursive = True
       source = source.parent
     # Check if source location can be read
-    if not os.access(source, os.R_OK):
-      self.core.log.add('No read access in [' + str(source.parent) + ']. Please run script as root.', 1)
-      self.core.panic()
+    #if not os.access(source, os.R_OK):
+    #  self.core.log.add('No read access in [' + str(source.parent) + ']. See documentation for more info. For now, please run script as root.', 1)
+    #  self.core.panic()
     # Check if source is a file
-    elif source.is_file():
+    #elif source.is_file():
+    self.core.log.add(': ' + str(source))
+    if self.core.fs.is_file(source, self.get_task_name()):  
       # Core backup process handles the usage of sudo when the
       # source is not accessible for the current user.
       self.create_backup(source, base)
-    if source.is_dir():
+    #if source.is_dir():
+    elif self.core.fs.is_dir(source, self.get_task_name()):
+      self.core.log.add('dir found: ' + str(source))
       # Process base
       if base is None:
         base = source
       for child in source.iterdir():
-        if child.is_dir():
+        #if child.is_dir():
+        if self.core.fs.is_dir(child, self.get_task_name()):
           if not self.is_ignored(child):
             self.process(child, recursive, base)
-        elif child.is_file():
+        #elif child.is_file():
+        elif self.core.fs.is_file(child, self.get_task_name()):
           self.create_backup(child, base)
+    else:
+      self.core.log.add('Location [' + str(source) + '] is neither file or directory. Skipping. ' + str(self.core.fs.is_dir(source, self.get_task_name())), 4)
 
   def create_backup(self, source, base):
     # Check type of input
