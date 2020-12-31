@@ -42,15 +42,15 @@ class Config:
     # First ensure that prefix is a list.
     if type(prefix) is not list:
       prefix = [prefix]
-    #if len(prefix) > 0 and prefix[0] != "task":
-    #  prefix = ['task'] + prefix
-    # Try exact Prefix
-    #
-    # 
+    # Ensure key is all lowercase.
+    key = key.lower()
     # if no prefix is supplied, try for an exact match
     if len(prefix) == 0:
       if key in self.storage:
         return self.storage[key]
+      elif key in self.core.storage:
+        # Check if key is in core storage (hardcoded fallback configuration)
+        return self.core.storage[key]
       else:
         return ''
     else:
@@ -62,12 +62,12 @@ class Config:
         return self.storage['.'.join(['task'] + prefix + [key])]
       elif not exact and key in self.storage:
         return self.storage[key]
+      elif not exact and key in self.core.storage:
+        # Check if key is in core storage (hardcoded fallback configuration)
+        return self.core.storage[key]
       else:
         return ''
     
-  def has_value(self, key):
-    # @todo
-    pass
   
   # Read Yaml configuration
   def get_contents_of_configuration_file(self, file):
