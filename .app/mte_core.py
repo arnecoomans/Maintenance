@@ -50,6 +50,13 @@ class Core:
       'runtime_user_id': str(os.getuid()),
       'runtime_group_id': str(os.getgid()),
       'has_root_privilage': self.has_root_privilage(),
+      # Logging
+      'log.display_level': 3,
+      'log.output_methods': ['screen', 'file'],
+      'log.welcome': True,
+      'log.header': True,
+      'log_output_file': 'log/runlog.log',
+      'log_output_file_mode': 'a',
       # Self-check
       # The following directories might not be present at runtime,
       # but might be expected sooner or later. 
@@ -61,14 +68,14 @@ class Core:
     self.log = mte_logging.Logger(self)
     #   Load configuration file
     self.config = mte_config.Config(self, self.storage['default_configuration'])
-    self.log.set_display_level(self.config.get('logging'))
+    self.log.update_config()
+    #self.log.set_display_level()
     #   Parse command line arguments
     self.arguments = self.process_parsed_arguments( self.get_parsed_arguments() )
     #   Load Filesystem functions
     self.fs = mte_fs.Filesystem(self)
-    #self.fs.create_directory('/development/maintenance/test')
-    #self.fs.create_backup('/development/maintenance/target.md', '/development/maintenance/backup/test.md')
     #   Check if at least some configuration is loaded
+    #   @todo
     #
     # Self-care
     self.verify_required_directories()
@@ -77,6 +84,8 @@ class Core:
     self.dispatcher = mte_task_dispatcher.TaskDispatcher(self)
     self.config.get_runtime_arguments()
 
+    self.log.flush()
+  
   #
   #
   # Display Core information

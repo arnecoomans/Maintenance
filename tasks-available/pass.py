@@ -27,8 +27,13 @@ class Task(mte_task_dispatcher.Task):
   # Everything that needs to be executed should be called from the
   # execute function. 
   def execute(self):
-    # is_file development
-    path = '/development/maintenance'
-    self.core.log.add(path)
-    self.core.log.add(str(self.core.fs.is_dir(path, self.get_task_name())))
+    # logging development
+    self.core.log.add('content', 0, self.get_task_name())
+    self.core.log.add('critical', 1, self.get_task_name())
+    self.core.log.add('error', 2, self.get_task_name())
+    self.core.log.add('warning', 3, self.get_task_name())
+    self.core.log.add('notice', 4, self.get_task_name())
+    self.core.log.add('-----', 5, self.get_task_name())
+    self.core.log.add('BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET. BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET. BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET. BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET. BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET. BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET. BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET. BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN, WHITE, RESET.', 5)
+    
     pass
