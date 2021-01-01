@@ -2,15 +2,26 @@ maintenance:
   logging: 3
   backup_target: "/backup/"
   #target_subdirectory: "/"
-  gzip_target: True
   target_use_gzip: True
   target_use_datetime: True
   date_time_format: "%Y%m%d"
-  can_use_sudo: FaTruelse
+  can_use_sudo: True
   show_runtime_duration: True
   contact:
     name: "Arne Coomans"
     email: "script+maintenance@arnecoomans.nl"
+  log:
+    display_level: 5
+    output_methods: "screen, file, database"
+    screen:
+      show_header: True
+      colourize: True
+      display_width: 79 #79 for default ssh
+    file:
+      output_filename: "log/runtime.log"
+      output_filemode: "a" # a for append, w for overwrite
+    database:
+      output_dbname: "data/runtimelog.db"
   task:
     self-update:
       always_cleanup: True
@@ -24,16 +35,12 @@ maintenance:
                        /etc/ngnix/global/,
                        /etc/nginx/snippets/,
                        /etc/php/7.4/fpm/,
-                       /etc/php/7.4/fpm/pool.d/,
-                       /etc/php/7.4/fpm/pool.d,
-                       /data/scripts/[r],
-                       /development/maintenance/[r].py"
+                       /etc/php/7.4/fpm/pool.d"
       ignored: ".git,
                __pycache__,
-               test.md,
                tasks-enabled"
       target_subdirectory: "config/"
       keep_incremental: True
       status_storage: "sqlite" # currently the only supported one
       hash_type: 'SHA1' # MD5 and SHA1 supported
-  #import: "config/example.yml"
+  import: "config/development.yml"
