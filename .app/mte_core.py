@@ -50,13 +50,14 @@ class Core:
       'runtime_user_id': str(os.getuid()),
       'runtime_group_id': str(os.getgid()),
       'has_root_privilage': self.has_root_privilage(),
+      # System defaults
+      'backup_target': '/backup/',
+      'target_use_gzip': False,
+      'can_use_sudo': False,
       # Logging
       'log.display_level': 3,
       'log.output_methods': ['screen', 'file'],
-      'log.welcome': True,
-      'log.header': True,
-      'log_output_file': 'log/runlog.log',
-      'log_output_file_mode': 'a',
+      'log.screen.display_width': 79,
       # Self-check
       # The following directories might not be present at runtime,
       # but might be expected sooner or later. 

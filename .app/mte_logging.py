@@ -153,7 +153,8 @@ class Logger:
         colour = Fore.MAGENTA
       elif line['level'] == 4:
         colour = Fore.YELLOW
-      colour_reset = Style.RESET_ALL
+      if line['level'] in [1, 2, 3, 4]:
+        colour_reset = Style.RESET_ALL
     output.append('[' + colour + self.get_importance(line['level']) + colour_reset + ']')
     # Message
     output.append(line['message'])

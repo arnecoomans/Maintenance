@@ -1,5 +1,5 @@
 maintenance:
-  logging: 3
+  #logging: 3
   backup_target: "/backup/"
   #target_subdirectory: "/"
   target_use_gzip: True
