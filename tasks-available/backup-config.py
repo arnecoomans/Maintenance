@@ -49,8 +49,9 @@ class Task(mte_task_dispatcher.Task):
 
   def execute(self):
     for source in self.sources:
-      self.core.log.add('Processing [' + source + '].', 4)
+      self.core.log.add('Processing [' + source + '].', 4, self.get_task_name())
       self.process(source)
+      self.core.log.flush()
 
 
 
@@ -62,9 +63,9 @@ class Task(mte_task_dispatcher.Task):
       source = pathlib.Path(source)
     # Process Recursive Marker
     if recursive:
-      self.core.log.add('[r] Processing [' + str(source).replace(str(base), '') + ']', 4)
+      self.core.log.add('[r] Processing [' + str(source).replace(str(base), '') + ']', 4, self.get_task_name())
     if source.stem == '[r]':
-      self.core.log.add(' Recursive marker found. Processing', 5)
+      self.core.log.add(' Recursive marker found. Processing', 5, self.get_task_name())
       recursive = True
       source = source.parent
     # Check if source location can be read
@@ -91,7 +92,7 @@ class Task(mte_task_dispatcher.Task):
         elif self.core.fs.is_file(child, self.get_task_name()):
           self.create_backup(child, base)
     else:
-      self.core.log.add('Location [' + str(source) + '] is neither file or directory. Skipping. ' + str(self.core.fs.is_dir(source, self.get_task_name())), 4)
+      self.core.log.add('Location [' + str(source) + '] is neither file or directory. Skipping. ' + str(self.core.fs.is_dir(source, self.get_task_name())), 4, self.get_task_name())
 
   def create_backup(self, source, base):
     # Check type of input
@@ -102,7 +103,7 @@ class Task(mte_task_dispatcher.Task):
       # Check if file hash is not known
       if not self.hashes_match(source):
         target = self.get_target_filename(source, base)
-        self.core.fs.create_backup(source, target, self.get_task_name()) 
+        target = self.core.fs.create_backup(source, target, self.get_task_name()) 
         self.store_hash(source, self.get_file_hash(source), target)
   
   def hashes_match(self, source):
@@ -112,7 +113,10 @@ class Task(mte_task_dispatcher.Task):
     source_hash = self.get_file_hash(source)
     stored_hash = self.get_stored_hash(source)
     if stored_hash is not None and source_hash == stored_hash[1]:
-      self.core.log.add('[' + str(source) + '] last change: [' + stored_hash[2] + '].', 5)
+      self.core.log.add('[' + str(source) + '] last change: [' + stored_hash[2] + '].', 5, self.get_task_name())
+      if not self.core.fs.file_exists(stored_hash[3], self.get_task_name()):
+        self.core.log.add('Backup of [' + str(source) + '] not found. Creating new backup.', 4, self.get_task_name())
+        return False
       return True
     else:
       return False

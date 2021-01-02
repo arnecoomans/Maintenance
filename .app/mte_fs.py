@@ -92,6 +92,7 @@ class Filesystem:
       self.core.log.add('Create Backup: [' + str(source.absolute()) + '] is a directory. Skipping.', 2)
     # If Source does not exist, throw a warning
     elif not os.path.isfile(source):
+      # @ this does not work at the moment, add the escalation of rights.
       self.core.log.add('Create Backup: [' + str(source.absolute()) + '] does not exist. Skipping.', 2)
     # If no reasons are found not to process the file, process it.
     #
@@ -128,7 +129,7 @@ class Filesystem:
       response = backup_process.read().strip().split("\n")
       #self.core.log.add(command, 1)
       self.core.log.add('Backup: [' + str(source.absolute()) + '] --> [' + str(target.absolute()) + '].', 4)
-      return True
+      return str(target.absolute())
     else:
       # This should not happen, should be covered by create_directory
       return False
@@ -236,3 +237,25 @@ class Filesystem:
         except PermissionError:
           pass
     return children
+  
+  def file_exists(self, file, task=''):
+    if type(file) is not pathlib.PosixPath:
+      file = pathlib.Path(file)
+    try:
+      if file.is_file():
+        #self.core.log.add('IS FILE')
+        return True
+      else:
+        # File does not exist
+        return False
+    except PermissionError:
+      self.core.log.add('Permission escalation when testing if [' + str(file) + '] exists.', 3)
+      command = 'if test -f ' + str(file) + '; then echo "True"; else echo "False"; fi'
+      command = os.popen(command)
+      result = command.read().strip()
+      if result == 'False':
+        return False
+      else:
+        return True
+      self.core.log.add(str(result))
+    return False
