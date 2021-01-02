@@ -1,1 +1,0 @@
-../tasks-available/self-update.py
